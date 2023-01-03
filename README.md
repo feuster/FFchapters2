@@ -3,7 +3,8 @@
 ## Introduction
 FFchapters2 is a FFmpeg based video chapter generation tool.
 
-FFchapters2 uses FFmpeg for frame accurate movie scene change detection and creates a chapter file, suitable for e.g. for Matroska.
+FFchapters2 uses FFmpeg for frame accurate movie scene change detection and creates a chapter file, suitable for e.g. for Matroska
+and/or a metafile for use directly with ffmpeg (add ```-i "<PATH>\<FILENAME>.meta" -map_metadata 1``` to your ffmpeg commandline).
 
 ## FFmpeg Installation
 The required FFmpeg is not bundled with the FFchapters2 release therefore you need to download a FFmpeg binary at the [FFmpeg homepage](https://ffmpeg.org/download.html).
@@ -15,7 +16,7 @@ The FFmpeg binary can be utilized by FFchapter2 via the following options:
 ## License / Copyright
 FFchapters2 is licensed under GPL-2.0-only.
 
-© Alexander Feuster 2022
+© Alexander Feuster 2023
 
 ## Running Demo
 ![Running Demo](./Running.gif)

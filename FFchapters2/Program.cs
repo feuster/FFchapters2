@@ -15,7 +15,9 @@ List<string> ScenesRaw = new List<string>();
 List<string> ScenesAll = new List<string>();
 List<string> ScenesSelected = new List<string>();
 List<string> ChaptersRaw = new List<string>();
+List<string> MetaChaptersRaw = new List<string>();
 List<string> Chapters = new List<string>();
+List<string> MetaChapters = new List<string>();
 int ShortStringMaxLength = 80;
 int Length = 0;
 string ChapterTitle = "";
@@ -23,8 +25,11 @@ string ChapterFile = "";
 string InputFile = "";
 string FFmpeg = "";
 string TempFile = "";
+string MetaFile = "";
 bool Close = false;
 bool IgnoreExistingChapters = false;
+bool ChapterStyle1 = false;
+bool ChapterStyle2 = false;
 #endregion
 
 #region Title
@@ -35,11 +40,14 @@ AnsiConsole.Profile.Out.SetEncoding(Encoding.UTF8);
 AnsiConsole.Clear();
 AnsiConsole.Write(new FigletText(FigletFont.Default, (Assembly.GetEntryAssembly().GetName().Name.Length > 0 ? Assembly.GetEntryAssembly().GetName().Name : "FFChapters2")).Centered().Color(Color.Blue));
 AnsiConsole.WriteLine();
+AnsiConsole.MarkupLine($"[green]Version: \"{"V" + Assembly.GetEntryAssembly().GetName().Version.Major.ToString() + "." + Assembly.GetEntryAssembly().GetName().Version.MinorRevision.ToString()}\"[/]");
+AnsiConsole.WriteLine();
 #endregion
 
 #region Commandline Argument Parser
 AnsiConsole.Write(new Rule("[blue]Commandline arguments[/]"));
 AnsiConsole.WriteLine("");
+
 Parser.Default.ParseArguments<Options>(args)
                    .WithParsed<Options>(o =>
                    {
@@ -83,7 +91,6 @@ Parser.Default.ParseArguments<Options>(args)
                                AnsiConsole.MarkupLine($"[red]Inputfile missing! Abort chapter creation![/]");
                                AnyKey();
                                Environment.Exit(-1);
-
                            }
                        }
                        else
@@ -122,22 +129,94 @@ Parser.Default.ParseArguments<Options>(args)
                            AnsiConsole.MarkupLine($"[green]Inputfile: ignore existing chapters[/]");
                        }
 
-                       if (o.ChapterFile != "" && o.ChapterFile != InputFile)
+                       if (o.ChapterStyle.ToLowerInvariant() == "chapters")
                        {
-                           ChapterFile = o.ChapterFile;
-                           AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\"[/]");
+                           ChapterStyle1 = true;
+                           ChapterStyle2 = false;
+                           AnsiConsole.MarkupLine($"[green]Chapterfile style: \"chapters\"[/]");
                        }
-                       else if (o.ChapterFile == InputFile)
+                       else if (o.ChapterStyle.ToLowerInvariant() == "meta")
                        {
-                           AnsiConsole.MarkupLine($"[yellow]Chapterfile and Inputfile have the same path! Autocorrecting path![/]");
-                           ChapterFile = InputFile + ".txt";
-                           AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
+                           ChapterStyle1 = false;
+                           ChapterStyle2 = true;
+                           AnsiConsole.MarkupLine($"[green]Chapterfile style: \"meta\"[/]");
                        }
                        else
                        {
-                           AnsiConsole.MarkupLine($"[yellow]Chapterfile path missing! Autocreating path![/]");
-                           ChapterFile = Path.ChangeExtension(o.InputFile, ".txt");
-                           AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
+                           ChapterStyle1 = true;
+                           ChapterStyle2 = true;
+                           AnsiConsole.MarkupLine($"[green]Chapterfile style: \"chapters, meta\" (all)[/]");
+                       }
+
+                       if (o.ChapterFile != "" && o.ChapterFile != InputFile)
+                       {
+                           ChapterFile = o.ChapterFile;
+                           if (ChapterStyle1 && !ChapterStyle2)
+                               AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\"[/]");
+                           else if (!ChapterStyle1 && ChapterStyle2)
+                           {
+                               MetaFile = ChapterFile;
+                               AnsiConsole.MarkupLine($"[green]Metafile path: \"{ShortString(MetaFile, ShortStringMaxLength)}\"[/]");
+                           }
+                           else if (ChapterStyle1 && ChapterStyle2)
+                           {
+                               //MetaFile = ChapterFile + ".meta";
+                               MetaFile = Path.ChangeExtension(ChapterFile, ".meta");
+                               AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\"[/]");
+                               AnsiConsole.MarkupLine($"[green]Metafile path: \"{ShortString(MetaFile, ShortStringMaxLength)}\" (Auto)[/]");
+                           }
+                       }
+                       else if (o.ChapterFile == InputFile)
+                       {
+                           if (ChapterStyle1 && !ChapterStyle2)
+                           {
+                               ChapterFile = InputFile + ".txt";
+                               AnsiConsole.MarkupLine($"[yellow]Chapterfile and Inputfile have the same path! Autocorrecting path![/]");
+                               AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
+                           }
+                           else if (!ChapterStyle1 && ChapterStyle2)
+                           {
+                               MetaFile = InputFile + ".meta";
+                               AnsiConsole.MarkupLine($"[yellow]Metafile and Inputfile have the same path! Autocorrecting path![/]");
+                               AnsiConsole.MarkupLine($"[green]Metafile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
+                           }
+                           else if (ChapterStyle1 && ChapterStyle2)
+                           {
+                               ChapterFile = InputFile + ".txt";
+                               MetaFile = InputFile + ".meta";
+                               AnsiConsole.MarkupLine($"[yellow]Chapterfile/Metafile and Inputfile have the same path! Autocorrecting path![/]");
+                               AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
+                               AnsiConsole.MarkupLine($"[green]Metafile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
+                           }
+                       }
+                       else
+                       {
+                           if (ChapterStyle1 && !ChapterStyle2)
+                           {
+                               AnsiConsole.MarkupLine($"[yellow]Chapterfile path missing! Autocreating path![/]");
+                               ChapterFile = Path.ChangeExtension(o.InputFile, ".txt");
+                               AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
+                           }
+                           else if (!ChapterStyle1 && ChapterStyle2)
+                           {
+                               AnsiConsole.MarkupLine($"[yellow]Metafile path missing! Autocreating path![/]");
+                               MetaFile = Path.ChangeExtension(o.InputFile, ".meta");
+                               AnsiConsole.MarkupLine($"[green]Metafile path: \"{ShortString(MetaFile, ShortStringMaxLength)}\" (Auto)[/]");
+                           }
+                           else if (ChapterStyle1 && ChapterStyle2)
+                           {
+                               AnsiConsole.MarkupLine($"[yellow]Chapterfile/Metafile paths missing! Autocreating path![/]");
+                               ChapterFile = Path.ChangeExtension(o.InputFile, ".txt");
+                               MetaFile = Path.ChangeExtension(o.InputFile, ".meta");
+                               AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
+                               AnsiConsole.MarkupLine($"[green]Metafile path: \"{ShortString(MetaFile, ShortStringMaxLength)}\" (Auto)[/]");
+                           }
+                           else
+                           {
+                               AnsiConsole.MarkupLine($"[red]Chapterfile/Metafile paths missing! Autocreating path not possible![/]");
+                               AnyKey();
+                               Environment.Exit(-1);
+                           }
                        }
 
                        if (o.ChapterLength > 0 && o.ChapterLength < 16)
@@ -175,10 +254,10 @@ Parser.Default.ParseArguments<Options>(args)
                    })
                    .WithNotParsed<Options>(o =>
                    {
+                       AnsiConsole.MarkupLine($"[red]Commandline arguments missing! Abort chapter creation![/]");
                        AnyKey();
                        Environment.Exit(-1);
                    });
-AnsiConsole.WriteLine("");
 #endregion
 
 #region Menu
@@ -387,93 +466,201 @@ AnsiConsole.WriteLine("");
 #endregion
 
 #region Convert scene timecodes to hh:mm:ss.mmm time chapter format
-AnsiConsole.Write(new Rule("[blue]Convert scene timecodes to hh:mm:ss.mmm time chapter format[/]"));
-AnsiConsole.Progress().Start(ctx =>
+if (ChapterStyle1)
 {
-    ChaptersRaw.Clear();
-
-    //Define console output task
-    var task1 = ctx.AddTask("[green]Convert scene timecodes to chapters[/]");
-
-    task1.MaxValue = ScenesSelected.Count;
-    while (!ctx.IsFinished)
+    AnsiConsole.Write(new Rule("[blue]Convert scene timecodes to hh:mm:ss.mmm time chapter format[/]"));
+    AnsiConsole.Progress().Start(ctx =>
     {
-        for (int i = 0; i < ScenesSelected.Count; i++)
+        ChaptersRaw.Clear();
+
+        //Define console output task
+        var task1 = ctx.AddTask("[green]Convert scene timecodes to chapters[/]");
+
+        task1.MaxValue = ScenesSelected.Count;
+        while (!ctx.IsFinished)
         {
-            var TIMECODE_Time = float.Parse(ScenesSelected[i]);
-            var TIMECODE_Sec = Math.Truncate(TIMECODE_Time);
-            var TIMECODE_Sec_Frac = TIMECODE_Time - Math.Truncate(TIMECODE_Time);
+            for (int i = 0; i < ScenesSelected.Count; i++)
+            {
+                var TIMECODE_Time = float.Parse(ScenesSelected[i]);
+                var TIMECODE_Sec = Math.Truncate(TIMECODE_Time);
+                var TIMECODE_Sec_Frac = TIMECODE_Time - Math.Truncate(TIMECODE_Time);
 
-            //convert timecode values parts to hh:mm:ss.ms time values
-            int Hours = (int)Math.Floor(Math.Truncate(TIMECODE_Sec / 3600));
-            TIMECODE_Sec = TIMECODE_Sec - (Hours * 3600);
-            int Minutes = (int)Math.Round(Math.Truncate(TIMECODE_Sec / 60));
-            TIMECODE_Sec = TIMECODE_Sec - (Minutes * 60);
-            int Seconds = (int)Math.Round(Math.Truncate(TIMECODE_Sec));
-            int MilliSeconds = (int)Math.Round(TIMECODE_Sec_Frac * 1000);
+                //convert timecode values parts to hh:mm:ss.ms time values
+                int Hours = (int)Math.Floor(Math.Truncate(TIMECODE_Sec / 3600));
+                TIMECODE_Sec = TIMECODE_Sec - (Hours * 3600);
+                int Minutes = (int)Math.Round(Math.Truncate(TIMECODE_Sec / 60));
+                TIMECODE_Sec = TIMECODE_Sec - (Minutes * 60);
+                int Seconds = (int)Math.Round(Math.Truncate(TIMECODE_Sec));
+                int MilliSeconds = (int)Math.Round(TIMECODE_Sec_Frac * 1000);
 
-            //add chapter time to temporary chapter list
-            ChaptersRaw.Add(Hours.ToString("D2") + ":" + Minutes.ToString("D2") + ":" + Seconds.ToString("D2") + "." + MilliSeconds.ToString("D3"));
-            task1.Increment(1);
-            ctx.Refresh();
+                //add chapter time to temporary chapter list
+                ChaptersRaw.Add(Hours.ToString("D2") + ":" + Minutes.ToString("D2") + ":" + Seconds.ToString("D2") + "." + MilliSeconds.ToString("D3"));
+                task1.Increment(1);
+                ctx.Refresh();
+            }
         }
-    }
-});
+    });
 
-//Sort chapters
-ChaptersRaw = ChaptersRaw.Distinct().ToList();
-ChaptersRaw.Sort();
+    //Sort chapters
+    ChaptersRaw = ChaptersRaw.Distinct().ToList();
+    ChaptersRaw.Sort();
 
-//Fallback in case no chapters are found
-if (ChaptersRaw[0] != "00:00:00.000")
-    ChaptersRaw.Insert(0, "00:00:00.000");
+    //Fallback in case no chapters are found
+    if (ChaptersRaw[0] != "00:00:00.000")
+        ChaptersRaw.Insert(0, "00:00:00.000");
 
-//Sort chapters
-ChaptersRaw = ChaptersRaw.Distinct().ToList();
-ChaptersRaw.Sort();
+    //Sort chapters
+    ChaptersRaw = ChaptersRaw.Distinct().ToList();
+    ChaptersRaw.Sort();
+}
+#endregion
+
+#region Convert scene timecodes to 1 / 1000000000 timebase chapter format
+if (ChapterStyle2)
+{
+    AnsiConsole.Write(new Rule("[blue]Convert scene timecodes to 1 / 1000000000 timebase chapter format[/]"));
+    AnsiConsole.Progress().Start(ctx =>
+    {
+        MetaChaptersRaw.Clear();
+
+        //Define console output task
+        var task1 = ctx.AddTask("[green]Convert scene timecodes to meta chapters[/]");
+
+        var TIMECODE_Time = float.Parse(ScenesAll[ScenesAll.Count - 1]);
+        var TIMECODE_Sec = Math.Truncate(TIMECODE_Time);
+        var TIMECODE_Sec_Frac = TIMECODE_Time - Math.Truncate(TIMECODE_Time);
+
+        //add last chapter time to temporary chapter list
+        MetaChaptersRaw.Add(TIMECODE_Sec.ToString() + ((int)Math.Round(TIMECODE_Sec_Frac * 1000)).ToString("D3") + "000000");
+
+        task1.MaxValue = ScenesSelected.Count;
+        while (!ctx.IsFinished)
+        {
+            for (int i = 0; i < ScenesSelected.Count; i++)
+            {
+                TIMECODE_Time = float.Parse(ScenesSelected[i]);
+                TIMECODE_Sec = Math.Truncate(TIMECODE_Time);
+                TIMECODE_Sec_Frac = TIMECODE_Time - Math.Truncate(TIMECODE_Time);
+
+                //add chapter time to temporary chapter list
+                MetaChaptersRaw.Add(TIMECODE_Sec.ToString() + ((int)Math.Round(TIMECODE_Sec_Frac * 1000)).ToString("D3") + "000000");
+                task1.Increment(1);
+                ctx.Refresh();
+            }
+        }
+    });
+
+    //Sort chapters
+    MetaChaptersRaw = MetaChaptersRaw.Distinct().ToList();
+    MetaChaptersRaw = MetaChaptersRaw.OrderBy(c => Convert.ToInt64(c)).ToList();
+
+    //Fallback in case no chapters are found
+    if (MetaChaptersRaw[0] != "0")
+        MetaChaptersRaw.Insert(0, "0");
+
+    //Sort chapters
+    MetaChaptersRaw = MetaChaptersRaw.Distinct().ToList();
+    MetaChaptersRaw = MetaChaptersRaw.OrderBy(c => Convert.ToInt64(c)).ToList();
+}
 #endregion
 
 #region Create chapter file
-AnsiConsole.Write(new Rule("[blue]Create chapter entries[/]"));
-AnsiConsole.Progress().Start(ctx =>
+if (ChapterStyle1)
 {
-    Chapters.Clear();
-
-    //Define console output task
-    var task1 = ctx.AddTask("[green]Convert chapters to chapter entries[/]");
-
-    task1.MaxValue = ChaptersRaw.Count;
-    while (!ctx.IsFinished)
+    AnsiConsole.Write(new Rule("[blue]Create chapter entries[/]"));
+    AnsiConsole.Progress().Start(ctx =>
     {
-        for (int i = 1; i <= ChaptersRaw.Count; i++)
-        {
-            Chapters.Add("CHAPTER" + i.ToString("D2") + "=" + ChaptersRaw[i - 1]);
-            Chapters.Add("CHAPTER" + i.ToString("D2") + "NAME=" + ChapterTitle + " " + i.ToString());
-            task1.Increment(1);
-            ctx.Refresh();
-        }
-    }
-});
+        Chapters.Clear();
 
-//Save chapter file
-AnsiConsole.Write(new Rule("[blue]Create chapter file[/]"));
-AnsiConsole.WriteLine("");
-try
-{
-    File.Delete(ChapterFile);
-    File.WriteAllLines(ChapterFile, Chapters);
+        //Define console output task
+        var task1 = ctx.AddTask("[green]Convert chapters to chapter entries[/]");
+
+        task1.MaxValue = ChaptersRaw.Count;
+        while (!ctx.IsFinished)
+        {
+            for (int i = 1; i <= ChaptersRaw.Count; i++)
+            {
+                Chapters.Add("CHAPTER" + i.ToString("D2") + "=" + ChaptersRaw[i - 1]);
+                Chapters.Add("CHAPTER" + i.ToString("D2") + "NAME=" + ChapterTitle + " " + i.ToString());
+                task1.Increment(1);
+                ctx.Refresh();
+            }
+        }
+    });
+
+    //Save chapter file
+    AnsiConsole.Write(new Rule("[blue]Create chapter file[/]"));
+    AnsiConsole.WriteLine("");
+    try
+    {
+        File.Delete(ChapterFile);
+        File.WriteAllLines(ChapterFile, Chapters);
+    }
+    catch (Exception e)
+    {
+        AnsiConsole.MarkupLine("[White on Red]Exception: " + e.Message + "[/]");
+    }
+    if (File.Exists(ChapterFile))
+        AnsiConsole.MarkupLine($"[Bold White on Green]Chapter file \"{ShortString(ChapterFile, ShortStringMaxLength)}\" created[/]");
+    else
+        AnsiConsole.MarkupLine($"[Bold White on Red]Chapter file \"{ShortString(ChapterFile, ShortStringMaxLength)}\" not created[/]");
+    Console.WriteLine("");
 }
-catch (Exception e)
+#endregion
+
+#region Create meta file
+if (ChapterStyle2)
 {
-    AnsiConsole.MarkupLine("[White on Red]Exception: " + e.Message + "[/]");
+    AnsiConsole.Write(new Rule("[blue]Create meta entries[/]"));
+    AnsiConsole.Progress().Start(ctx =>
+    {
+        MetaChapters.Clear();
+        MetaChapters.Add(";FFMETADATA1");
+
+        //Define console output task
+        var task1 = ctx.AddTask("[green]Convert chapters to meta entries[/]");
+
+        task1.MaxValue = MetaChaptersRaw.Count - 1;
+        int j = 0;
+        while (!ctx.IsFinished)
+        {
+            for (int i = 1; i <= MetaChaptersRaw.Count - 1; i++)
+            {
+                j++;
+                MetaChapters.Add("[CHAPTER]");
+                MetaChapters.Add("TIMEBASE=1/1000000000");
+                MetaChapters.Add("START=" + MetaChaptersRaw[i - 1]);
+                MetaChapters.Add("END=" + MetaChaptersRaw[i]);
+                MetaChapters.Add("title=" + ChapterTitle + " " + j.ToString());
+                task1.Increment(1);
+                ctx.Refresh();
+            }
+        }
+    });
+
+    //Save chapter file
+    AnsiConsole.Write(new Rule("[blue]Create meta chapter file[/]"));
+    AnsiConsole.WriteLine("");
+    try
+    {
+        File.Delete(MetaFile);
+        File.WriteAllLines(MetaFile, MetaChapters);
+    }
+    catch (Exception e)
+    {
+        AnsiConsole.MarkupLine("[White on Red]Exception: " + e.Message + "[/]");
+    }
+    if (File.Exists(MetaFile))
+        AnsiConsole.MarkupLine($"[Bold White on Green]Chapter file \"{ShortString(MetaFile, ShortStringMaxLength)}\" created[/]");
+    else
+        AnsiConsole.MarkupLine($"[Bold White on Red]Chapter file \"{ShortString(MetaFile, ShortStringMaxLength)}\" not created[/]");
+    Console.WriteLine("");
 }
-if (File.Exists(ChapterFile))
-    AnsiConsole.MarkupLine($"[Bold White on Green]Chapter file \"{ShortString(ChapterFile, ShortStringMaxLength)}\" created[/]");
-else
-    AnsiConsole.MarkupLine($"[Bold White on Red]Chapter file \"{ShortString(ChapterFile, ShortStringMaxLength)}\" not created[/]");
 #endregion
 
 #region End
+AnsiConsole.Write(new Rule("[blue]Finished![/]"));
+Console.WriteLine("");
 AnyKey();
 #endregion
 
@@ -505,6 +692,11 @@ string ShortString(string Text, int MaxLength)
 
 public class Options
 {
+    public Options() { }
+
+    [Value(0)]
+    public IEnumerable<string> Props { get; set; }
+
     [Option('f', "ffmpeg", Default = "ffmpeg.exe", Required = false, HelpText = "Set path to FFmpeg.exe")]
     public string FFmpeg { get; set; } = "ffmpeg.exe";
 
@@ -514,7 +706,7 @@ public class Options
     [Option('o', "output", Default = "", Required = false, HelpText = "Set path to output chapter file")]
     public string ChapterFile { get; set; } = "";
 
-    [Option('l', "length", Default = 0, Required = false, HelpText = "Set chapter length in minutes (1-15)")]
+    [Option('l', "length", Default = 5, Required = false, HelpText = "Set chapter length in minutes (1-15)")]
     public int ChapterLength { get; set; }
 
     [Option('c', "close", Default = false, Required = false, HelpText = "Close application automatically after chapter creation and on errors")]
@@ -525,5 +717,8 @@ public class Options
 
     [Option('t', "title", Default = "", Required = false, HelpText = "Set chapter title (is used for all chapters)")]
     public string ChapterTitle { get; set; } = "";
+
+    [Option('s', "style", Default = "all", Required = false, HelpText = "Set chapter style (chapters, meta, all)\n[chapters = simple chapter format Matroska compatible, meta = METAINFO ffmpeg compatible]")]
+    public string ChapterStyle { get; set; } = "";
 }
 #endregion
