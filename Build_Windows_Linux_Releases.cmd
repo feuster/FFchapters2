@@ -1,0 +1,8 @@
+@echo off
+cd %~dp0
+dotnet --info
+dotnet tool restore
+dotnet tool run dotnet-cake build.cake --configuration=release --framework=net7.0 --runtime=win-x64 --target=build
+dotnet tool run dotnet-cake build.cake --configuration=release --framework=net7.0 --runtime=linux-x64 --target=build
+echo.
+pause

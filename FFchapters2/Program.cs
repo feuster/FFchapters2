@@ -1,8 +1,9 @@
-﻿#region using
+#region using
 using CommandLine;
 using Spectre.Console;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -26,21 +27,38 @@ string InputFile = "";
 string FFmpeg = "";
 string TempFile = "";
 string MetaFile = "";
+string AppVersion = $"[green]Version: {"V" + Assembly.GetEntryAssembly().GetName().Version.Major.ToString() + "." + Assembly.GetEntryAssembly().GetName().Version.MinorRevision.ToString()}[/]";
+string? AppName = Assembly.GetEntryAssembly().GetName().Name;
 bool Close = false;
 bool IgnoreExistingChapters = false;
 bool ChapterStyle1 = false;
 bool ChapterStyle2 = false;
+bool OSLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux);
+//GitVersion will be only be actualized/overwritten when using Cake build!
+const string GitVersion = "git-e3313f9";
 #endregion
 
 #region Title
 //Title
 Console.OutputEncoding = Encoding.UTF8;
 Console.InputEncoding = Encoding.UTF8;
+FigletText fText = new FigletText(FigletFont.Default, AppName == null ? "FFChapters2" : AppName).Centered().Color(Color.Blue);
+#if DEBUG
+AppVersion += $" [red]Debug[/]";
+#else
+AppVersion += $" [green]Release[/]";
+#endif
+#if NET6_0
+AppVersion += $" [green].NET6[/]";
+#elif NET7_0
+AppVersion += $" [green].NET7[/]";
+#endif
+if (GitVersion != "") AppVersion += $" [green]{GitVersion}[/]";
 AnsiConsole.Profile.Out.SetEncoding(Encoding.UTF8);
 AnsiConsole.Clear();
-AnsiConsole.Write(new FigletText(FigletFont.Default, (Assembly.GetEntryAssembly().GetName().Name.Length > 0 ? Assembly.GetEntryAssembly().GetName().Name : "FFChapters2")).Centered().Color(Color.Blue));
+AnsiConsole.Write(fText);
 AnsiConsole.WriteLine();
-AnsiConsole.MarkupLine($"[green]Version: \"{"V" + Assembly.GetEntryAssembly().GetName().Version.Major.ToString() + "." + Assembly.GetEntryAssembly().GetName().Version.MinorRevision.ToString()}\"[/]");
+AnsiConsole.MarkupLine(AppVersion);
 AnsiConsole.WriteLine();
 #endregion
 
@@ -60,11 +78,17 @@ Parser.Default.ParseArguments<Options>(args)
                            }
                            else
                            {
-                               buffer = Environment.GetEnvironmentVariable("PATH").Split(';').Where(s => File.Exists(Path.Combine(s, "ffmpeg.exe"))).FirstOrDefault();
+                               if (OSLinux)
+                                   buffer = Environment.GetEnvironmentVariable("PATH").Split(';').Where(s => File.Exists(Path.Combine(s, "ffmpeg"))).FirstOrDefault();
+                               else
+                                   buffer = Environment.GetEnvironmentVariable("PATH").Split(';').Where(s => File.Exists(Path.Combine(s, "ffmpeg.exe"))).FirstOrDefault();
                                if (buffer == null)
                                {
                                    AnsiConsole.MarkupLine($"[yellow]FFmpeg path: \"{ShortString(o.FFmpeg, ShortStringMaxLength)}\" not found[/]");
-                                   FFmpeg = "ffmpeg.exe";
+                                    if (OSLinux)
+                                        FFmpeg = "/usr/bin/ffmpeg";
+                                    else
+                                        FFmpeg = "ffmpeg.exe";
                                    AnsiConsole.MarkupLine($"[green]FFmpeg path: \"{ShortString(FFmpeg, ShortStringMaxLength)}\" (Default Fallback)[/]");
                                }
                                else
@@ -356,14 +380,12 @@ AnsiConsole.Progress().Start(ctx =>
 
         //Define console output task
         var task1 = ctx.AddTask("[green]Extracting scene changes[/]");
-
         task1.MaxValue = ScenesRaw.Count;
         while (!ctx.IsFinished)
         {
             //Extract timecodes and preformat them for sorting
             for (int i = 0; i < ScenesRaw.Count; i++)
             {
-
                 if (ScenesRaw[i].ToLowerInvariant().Contains("chapter #") && !IgnoreExistingChapters)
                 {
                     buffer = ScenesRaw[i];
@@ -373,9 +395,13 @@ AnsiConsole.Progress().Start(ctx =>
 
                 if (ScenesRaw[i].ToLowerInvariant().Contains("parsed_showinfo") && ScenesRaw[i].ToLowerInvariant().Contains("pts_time"))
                 {
-                    buffer = ScenesRaw[i];
-                    buffer = Regex.Match(buffer, "(?<=pts_time:)(.*)(?=pos:)").Value.Trim();
-                    ScenesAll.Add(float.Parse(buffer, CultureInfo.InvariantCulture.NumberFormat).ToString("F3").PadLeft(20));
+                    buffer = "";
+                    //support pts_time format for ffmpeg versions <=5.1.2 and >=6.0
+                    buffer = Regex.Match(ScenesRaw[i], "(?<=pts_time:)(.*)(?=\\sduration:)").Value.Trim().Replace(" ", "");   //ffmpeg version >=6.0
+                    if (buffer.Length == 0 || buffer == null)
+                        buffer = Regex.Match(ScenesRaw[i], "(?<=pts_time:)(.*)(?=pos:)").Value.Trim().Replace(" ", "");       //ffmpeg version <=5.1.2                  
+                    if (buffer.Length > 0 || buffer != null)
+                        ScenesAll.Add(float.Parse(buffer, CultureInfo.InvariantCulture.NumberFormat).ToString("F3").PadLeft(20));
                 }
 
                 if (ScenesRaw[i].ToLowerInvariant().Contains("blackdetect") && ScenesRaw[i].ToLowerInvariant().Contains("black_start"))
@@ -695,11 +721,14 @@ public class Options
     public Options() { }
 
     [Value(0)]
-    public IEnumerable<string> Props { get; set; }
-
+    public IEnumerable<string> Props { get; set; } = new List<string>();
+#if LINUX
+    [Option('f', "ffmpeg", Default = "/usr/local/bin/ffmpeg", Required = false, HelpText = "Set path to FFmpeg")]
+    public string FFmpeg { get; set; } = "/usr/local/bin/ffmpeg";
+#else
     [Option('f', "ffmpeg", Default = "ffmpeg.exe", Required = false, HelpText = "Set path to FFmpeg.exe")]
     public string FFmpeg { get; set; } = "ffmpeg.exe";
-
+#endif
     [Option('i', "input", Default = "", Required = false, HelpText = "Set path to input video")]
     public string InputFile { get; set; } = "";
 
@@ -720,5 +749,6 @@ public class Options
 
     [Option('s', "style", Default = "all", Required = false, HelpText = "Set chapter style (chapters, meta, all)\n[chapters = simple chapter format Matroska compatible, meta = METAINFO ffmpeg compatible]")]
     public string ChapterStyle { get; set; } = "";
+
 }
 #endregion

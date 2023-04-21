@@ -3,7 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFchapters2", "FFchapters2\FFchapters2.csproj", "{E9ED7235-2D95-48F6-A21C-F85D871CE45A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFchapters2", "FFchapters2\FFchapters2.csproj", "{E9ED7235-2D95-48F6-A21C-F85D871CE45A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Projektmappenelemente", "Projektmappenelemente", "{C02D0BB4-B73E-40FD-948C-E31018F37F7F}"
+	ProjectSection(SolutionItems) = preProject
+		build.cake = build.cake
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

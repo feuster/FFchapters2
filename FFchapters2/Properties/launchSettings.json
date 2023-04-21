@@ -1,6 +1,10 @@
 {
   "profiles": {
-    "FFchapters": {
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    },
+    "FFchapters2": {
       "commandName": "Project"
     }
   }
