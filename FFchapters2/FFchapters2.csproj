@@ -14,7 +14,7 @@
     <Description>FFchapters2 is a FFmpeg based video chapter generation tool</Description>
     <Copyright>© Alexander Feuster 2023</Copyright>
     <PackageTags>FFchapter2, ffmpeg, chapter, chapters, metainfo, MKV, Matroska</PackageTags>
-    <NeutralLanguage>en</NeutralLanguage>
+    <NeutralLanguage>en-001</NeutralLanguage>
     <PackageLicenseExpression>GPL-2.0-only</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Authors>Alexander Feuster</Authors>
@@ -26,6 +26,7 @@
     <DefineConstants Condition="'$(RuntimeIdentifier)' == 'win-x64'">$(DefineConstants);WINDOWS</DefineConstants>
     <DefineConstants Condition="'$(RuntimeIdentifier)' == 'linux-x86'">$(DefineConstants);LINUX</DefineConstants>
     <DefineConstants Condition="'$(RuntimeIdentifier)' == 'linux-x64'">$(DefineConstants);LINUX</DefineConstants>
+    <Version>$(AssemblyVersion)</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">

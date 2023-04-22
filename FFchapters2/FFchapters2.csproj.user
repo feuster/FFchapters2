@@ -3,6 +3,7 @@
   <PropertyGroup>
     <_LastSelectedProfileId>C:\Sourcecodes\FFchapters2\FFchapters2\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
     <ActiveDebugProfile>FFchapters2</ActiveDebugProfile>
+    <ActiveDebugFramework>net7.0</ActiveDebugFramework>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>

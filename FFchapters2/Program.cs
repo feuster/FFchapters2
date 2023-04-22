@@ -1,6 +1,7 @@
 #region using
 using CommandLine;
 using Spectre.Console;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -25,7 +26,7 @@ string ChapterTitle = "";
 string ChapterFile = "";
 string InputFile = "";
 string FFmpeg = "";
-string TempFile = "";
+string FFmpegVersion = "";
 string MetaFile = "";
 string AppVersion = $"[green]Version: {"V" + Assembly.GetEntryAssembly().GetName().Version.Major.ToString() + "." + Assembly.GetEntryAssembly().GetName().Version.MinorRevision.ToString()}[/]";
 string? AppName = Assembly.GetEntryAssembly().GetName().Name;
@@ -35,7 +36,7 @@ bool ChapterStyle1 = false;
 bool ChapterStyle2 = false;
 bool OSLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux);
 //GitVersion will be only be actualized/overwritten when using Cake build!
-const string GitVersion = "git-e3313f9";
+const string GitVersion = "git-ca21c98";
 #endregion
 
 #region Title
@@ -69,6 +70,7 @@ AnsiConsole.WriteLine("");
 Parser.Default.ParseArguments<Options>(args)
                    .WithParsed<Options>(o =>
                    {
+                       //FFmpeg options
                        if (o.FFmpeg != "")
                        {
                            if (File.Exists(o.FFmpeg))
@@ -85,20 +87,39 @@ Parser.Default.ParseArguments<Options>(args)
                                if (buffer == null)
                                {
                                    AnsiConsole.MarkupLine($"[yellow]FFmpeg path: \"{ShortString(o.FFmpeg, ShortStringMaxLength)}\" not found[/]");
-                                    if (OSLinux)
-                                        FFmpeg = "/usr/bin/ffmpeg";
-                                    else
-                                        FFmpeg = "ffmpeg.exe";
+                                   if (OSLinux)
+                                       FFmpeg = "/usr/bin/ffmpeg";
+                                   else
+                                       FFmpeg = "ffmpeg.exe";
                                    AnsiConsole.MarkupLine($"[green]FFmpeg path: \"{ShortString(FFmpeg, ShortStringMaxLength)}\" (Default Fallback)[/]");
                                }
                                else
                                {
-                                   FFmpeg = buffer + "\\ffmpeg.exe";
+                                   if (OSLinux)
+                                       FFmpeg = buffer + "\\ffmpeg.exe";
+                                   else
+                                       FFmpeg = buffer + "\\ffmpeg.exe";
                                    AnsiConsole.MarkupLine($"[green]FFmpeg path: \"{ShortString(FFmpeg, ShortStringMaxLength)}\" (in Environment Path)[/]");
                                }
                            }
                        }
 
+                       //FFmpeg not found abort
+                       if (!File.Exists(FFmpeg))
+                       {
+                           AnsiConsole.MarkupLine($"[red]FFmpeg not found! Abort chapter creation![/]");
+                           AnyKey();
+                           Environment.Exit(-1);
+                       }
+
+                       //FFmpeg version
+                       FFmpegVersion = GetFFmpegVersion();
+                       if (FFmpegVersion != string.Empty)
+                           AnsiConsole.MarkupLine($"[green]FFmpeg version: {FFmpegVersion}[/]");
+                       else
+                           AnsiConsole.MarkupLine($"[yellow]FFmpeg version: unknown[/]");
+
+                       //Input file option
                        if (o.InputFile != "")
                        {
                            if (File.Exists(o.InputFile))
@@ -147,6 +168,7 @@ Parser.Default.ParseArguments<Options>(args)
                            }
                        }
 
+                       //Chapter options
                        if (o.IgnoreExistingChapters)
                        {
                            IgnoreExistingChapters = o.IgnoreExistingChapters;
@@ -320,36 +342,48 @@ AnsiConsole.Status()
     .AutoRefresh(false)
     .Start("[green]FFmpeg running[/]", ctx =>
     {
-        TempFile = Path.ChangeExtension(ChapterFile, ".tmp");
         try
         {
-            if (File.Exists(TempFile))
-                File.Delete(TempFile);
-
             Process RunProcess = new Process();
-            RunProcess.StartInfo.FileName = "cmd.exe";
-            RunProcess.StartInfo.WorkingDirectory = Path.GetDirectoryName(FFmpeg);
-            RunProcess.StartInfo.Arguments = $"/c {@FFmpeg} -hide_banner -i \"{@InputFile}\" -vf blackdetect=d=1.0:pic_th=0.90:pix_th=0.00,blackframe=98:32,\"select='gt(scene,0.10)',showinfo\" -an -f null - 2>&1"; // > \"{@TempFile}\"";
+            if (OSLinux)
+            {
+                RunProcess.StartInfo.FileName = $"{@FFmpeg}";               
+                RunProcess.StartInfo.Arguments = $"-hide_banner -i \"{@InputFile}\" -vf blackdetect=d=1.0:pic_th=0.90:pix_th=0.00,blackframe=98:32,\"select='gt(scene,0.10)',showinfo\" -an -f null -";
+            }
+            else
+            {
+                RunProcess.StartInfo.FileName = "cmd.exe";
+                RunProcess.StartInfo.Arguments = $"/c {@FFmpeg} -hide_banner -i \"{@InputFile}\" -vf blackdetect=d=1.0:pic_th=0.90:pix_th=0.00,blackframe=98:32,\"select='gt(scene,0.10)',showinfo\" -an -f null - 2>&1";
+            }
+            RunProcess.StartInfo.WorkingDirectory = Path.GetDirectoryName(@InputFile);
             RunProcess.StartInfo.UseShellExecute = false;
             RunProcess.StartInfo.RedirectStandardOutput = true;
+            RunProcess.StartInfo.RedirectStandardError = true;
+            RunProcess.StartInfo.RedirectStandardInput = false;
             RunProcess.StartInfo.Verb = "";
             RunProcess.EnableRaisingEvents = true;
             RunProcess.StartInfo.CreateNoWindow = true;
-            RunProcess.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
+            //Optional preparation in case environment variables might be used in the future. Uncomment next line if needed.
+            //RunProcess.StartInfo.EnvironmentVariables["FFREPORT"] = $"file='{TempFile}':level=32";
+
+            void DataReadHandler(object sender, DataReceivedEventArgs e)
             {
                 if (!String.IsNullOrEmpty(e.Data))
-                {
                     ScenesRaw.Add(e.Data);
-                }
-            });
+            }
+            RunProcess.ErrorDataReceived += DataReadHandler;
+            RunProcess.OutputDataReceived += DataReadHandler;
+
             var Start = DateTime.Now;
             AnsiConsole.MarkupLine("[Green]Start: " + Start.ToLongTimeString() + "[/]");
             RunProcess.Start();
             RunProcess.BeginOutputReadLine();
+            RunProcess.BeginErrorReadLine();
             while (!RunProcess.HasExited)
             {
                 ctx.Refresh();
             }
+
             var Stop = DateTime.Now;
             AnsiConsole.MarkupLine("[Green]Stop:  " + Stop.ToLongTimeString() + "[/]");
             AnsiConsole.MarkupLine("[Green]Time:  " + (Stop - Start).ToString(@"hh\:mm\:ss") + "[/]");
@@ -362,6 +396,7 @@ AnsiConsole.Status()
             Environment.Exit(-1);
         }
     });
+
 if (ScenesRaw.Count == 0)
 {
     AnsiConsole.MarkupLine($"[red]FFmpeg could not create raw scenes![/]");
@@ -691,6 +726,8 @@ AnyKey();
 #endregion
 
 #region Functions & Classes
+
+#region AnyKey
 void AnyKey()
 {
     if (!Close)
@@ -700,7 +737,9 @@ void AnyKey()
         Console.ReadKey();
     }
 }
+#endregion
 
+#region ShortString
 string ShortString(string Text, int MaxLength)
 {
     if (Text.Length < 6 || MaxLength > Text.Length)
@@ -715,13 +754,66 @@ string ShortString(string Text, int MaxLength)
     Part2 = Text.Substring(Text.Length - PartLength);
     return Part1 + "..." + Part2;
 }
+#endregion
 
+#region Read ffmpeg version
+string GetFFmpegVersion()
+{
+    try
+    {
+        buffer = string.Empty;
+        Process RunProcess = new Process();
+        if (OSLinux)
+        {
+            RunProcess.StartInfo.FileName = $"{@FFmpeg}";
+            RunProcess.StartInfo.Arguments = $"-version";
+        }
+        else
+        {
+            RunProcess.StartInfo.FileName = "cmd.exe";
+            RunProcess.StartInfo.Arguments = $"/c {@FFmpeg} -version 2>&1";
+        }
+        RunProcess.StartInfo.WorkingDirectory = Path.GetDirectoryName(@FFmpeg);
+        RunProcess.StartInfo.UseShellExecute = false;
+        RunProcess.StartInfo.RedirectStandardOutput = true;
+        RunProcess.StartInfo.RedirectStandardError = true;
+        RunProcess.StartInfo.RedirectStandardInput = false;
+        RunProcess.StartInfo.Verb = "";
+        RunProcess.EnableRaisingEvents = true;
+        RunProcess.StartInfo.CreateNoWindow = true;
+
+        void DataReadHandler(object sender, DataReceivedEventArgs e)
+        {
+            if (!String.IsNullOrEmpty(e.Data))
+            {
+                buffer += e.Data;
+            }
+        }
+        RunProcess.ErrorDataReceived += DataReadHandler;
+        RunProcess.OutputDataReceived += DataReadHandler;
+
+        RunProcess.Start();
+        RunProcess.BeginOutputReadLine();
+        RunProcess.BeginErrorReadLine();
+        RunProcess.WaitForExit();
+        return Regex.Match(buffer, @"[\d][\.][\d\.]*(?=-)").Value.Trim();
+    }
+    catch (Exception e)
+    {
+        AnsiConsole.MarkupLine("[White on Red]Exception: " + e.Message + "[/]");
+        return string.Empty;
+    }
+}
+#endregion
+
+#region Options
 public class Options
 {
     public Options() { }
 
     [Value(0)]
     public IEnumerable<string> Props { get; set; } = new List<string>();
+
 #if LINUX
     [Option('f', "ffmpeg", Default = "/usr/local/bin/ffmpeg", Required = false, HelpText = "Set path to FFmpeg")]
     public string FFmpeg { get; set; } = "/usr/local/bin/ffmpeg";
@@ -729,6 +821,7 @@ public class Options
     [Option('f', "ffmpeg", Default = "ffmpeg.exe", Required = false, HelpText = "Set path to FFmpeg.exe")]
     public string FFmpeg { get; set; } = "ffmpeg.exe";
 #endif
+
     [Option('i', "input", Default = "", Required = false, HelpText = "Set path to input video")]
     public string InputFile { get; set; } = "";
 
@@ -751,4 +844,6 @@ public class Options
     public string ChapterStyle { get; set; } = "";
 
 }
+#endregion
+
 #endregion
