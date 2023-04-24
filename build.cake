@@ -52,6 +52,11 @@ Task("GitVersion")
     Console.WriteLine(Environment.NewLine + $"Git version: {SGitVersion}");
     });
 
+Task("CleanAll")
+        .IsDependentOn("Clean")
+        .IsDependentOn("CleanArtifacts")
+    ;
+
 Task("Clean")
     .Does(() =>
     {
@@ -65,11 +70,6 @@ Task("CleanArtifacts")
         Console.WriteLine(Environment.NewLine + $"Cleaning folder: ./{artifacts}");
         CleanDirectory($"./{artifacts}");
     });
-
-Task("CleanAll")
-        .IsDependentOn("Clean")
-        .IsDependentOn("CleanArtifacts")
-    ;
 
 Task("RegexGitVersion")
     .IsDependentOn("GitVersion")
@@ -164,7 +164,8 @@ Task("ZipRelease")
                         {
                             new FilePath($"./FFchapters2.exe"),
                             new FilePath($"{WorkDir}/LICENSE"),
-                            new FilePath($"{WorkDir}/README.md")
+                            new FilePath($"{WorkDir}/README.md"),
+                            new FilePath($"{WorkDir}/AddChaptersToMovieFile.cmd")
                         });
             if (FileExists($"{WorkDir}/ffmpeg.exe") && FileExists($"{WorkDir}/LICENSE"))
             {
