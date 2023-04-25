@@ -47,7 +47,6 @@ Task("GitVersion")
         );
     SGitVersion = string.Join("", IGitVersion).Trim();
     if (SGitVersion == "") SGitVersion = "0";
-    //FileWriteText(".gitversion", SGitVersion);
     SGitVersion = "git-" + SGitVersion;
     Console.WriteLine(Environment.NewLine + $"Git version: {SGitVersion}");
     });
@@ -148,7 +147,8 @@ Task("ZipRelease")
                         {
                             new FilePath($"./FFchapters2"),
                             new FilePath($"{WorkDir}/LICENSE"),
-                            new FilePath($"{WorkDir}/README.md")
+                            new FilePath($"{WorkDir}/README.md"),
+                            new FilePath($"{WorkDir}/MANUAL.txt")
                         });
             if (FileExists($"{WorkDir}/ffmpeg") && FileExists($"{WorkDir}/LICENSE"))
             {
@@ -165,7 +165,8 @@ Task("ZipRelease")
                             new FilePath($"./FFchapters2.exe"),
                             new FilePath($"{WorkDir}/LICENSE"),
                             new FilePath($"{WorkDir}/README.md"),
-                            new FilePath($"{WorkDir}/AddChaptersToMovieFile.cmd")
+                            new FilePath($"{WorkDir}/AddChaptersToMovieFile.cmd"),
+                            new FilePath($"{WorkDir}/MANUAL.txt")
                         });
             if (FileExists($"{WorkDir}/ffmpeg.exe") && FileExists($"{WorkDir}/LICENSE"))
             {

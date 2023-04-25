@@ -1,0 +1,39 @@
+──────────────────────────────────────────────── Commandline arguments ─────────────────────────────────────────────────
+
+  -f, --ffmpeg        (Default: ffmpeg.exe) Set path to FFmpeg.exe
+
+  -i, --input         (Default: ) Set path to input video
+
+  -o, --output        (Default: ) Set path to output chapter file
+
+  -l, --length        (Default: 5) Set chapter length in minutes (1-15)
+
+  -c, --close         (Default: false) Close application automatically after chapter creation and on errors
+
+  -n, --nochapters    (Default: false) Ignore existing chapters in video file
+
+  -t, --title         (Default: ) Set chapter title (is used for all chapters)
+
+  -s, --style         (Default: all) Set chapter style (chapters, meta, all)
+                      [chapters = simple chapter format Matroska compatible, meta = METAINFO ffmpeg compatible]
+
+  --help              Display this help screen.
+
+  --version           Display version information.
+
+───────────────────────────────────────────── Commandline syntax examples ──────────────────────────────────────────────
+
+<Path-to-FFchapters2> <Path-to-Moviefile>
+<Path-to-FFchapters2> -f <Path-to-FFmpeg> -i <Path-to-Moviefile>
+<Path-to-FFchapters2> -f <Path-to-FFmpeg> -i <Path-to-Moviefile> -l <Chapter-Length>
+<Path-to-FFchapters2> -f <Path-to-FFmpeg> -i <Path-to-Moviefile> -o <Path-to-Chapterfile>
+<Path-to-FFchapters2> -f <Path-to-FFmpeg> -i <Path-to-Moviefile> -o <Path-to-Chapterfile> -s <Chapter-Style>
+
+Example:
+FFchapters2.exe -f C:\Bin\ffmpeg.exe -i C:\Videos\MyMovie.mp4 -l 10 -s meta -o C:\Videos\Chapters.meta
+
+────────────────────────────────────────────────────── Copyright ───────────────────────────────────────────────────────
+
+Based on FFchapters2 2.0.0.3
+https://github.com/feuster/FFchapters2
+© Alexander Feuster 2023
