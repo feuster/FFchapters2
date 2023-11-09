@@ -177,11 +177,15 @@ Task("ZipRelease")
                 Console.WriteLine("Found no ffmpeg.exe in root folder or missing license file. Zip will contain only FFchapters2");
         }
 
+        SwitchCompressionMethod method = new SwitchCompressionMethod();
+        method.Level = 9;
+        method.Method = "Bzip2";
         SevenZip(new SevenZipSettings
         {
             Command = new AddCommand
             {
                 Files = files,
+                CompressionMethod = method,
                 Archive = new FilePath($"{WorkDir}/Release/FFchapters2_V{sAssemblyVersion}_{runtime}_{SGitVersion}.zip"),
             }
         });
