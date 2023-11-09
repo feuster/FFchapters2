@@ -18,6 +18,7 @@ if exist ".config/dotnet-tools.json" (
 	echo ========================================
 	echo.
 	dotnet new tool-manifest
-	dotnet tool install Cake.Tool --version 3.0.0
+	rem dotnet tool install Cake.Tool --version 3.0.0
+	dotnet tool install Cake.Tool
 	echo.
 )

@@ -1,10 +1,8 @@
 #region using
 using CommandLine;
 using Spectre.Console;
-using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -13,15 +11,17 @@ using System.Text.RegularExpressions;
 #region Declarations
 //Declarations
 string buffer;
-List<string> ScenesRaw = new List<string>();
-List<string> ScenesAll = new List<string>();
-List<string> ScenesSelected = new List<string>();
-List<string> ChaptersRaw = new List<string>();
-List<string> MetaChaptersRaw = new List<string>();
-List<string> Chapters = new List<string>();
-List<string> MetaChapters = new List<string>();
+List<string> ScenesRaw = new();
+List<string> ScenesAll = new();
+List<string> ScenesSelected = new();
+List<string> ChaptersRaw = new();
+List<string> MetaChaptersRaw = new();
+List<string> Chapters = new();
+List<string> MetaChapters = new();
 int ShortStringMaxLength = 80;
 int Length = 0;
+int Duration = 0;
+int Progress = 0;
 string ChapterTitle = "";
 string ChapterFile = "";
 string InputFile = "";
@@ -36,14 +36,14 @@ bool ChapterStyle1 = false;
 bool ChapterStyle2 = false;
 bool OSLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux);
 //GitVersion will be only be actualized/overwritten when using Cake build!
-const string GitVersion = "git-2de242d";
+const string GitVersion = "git-8b6616e";
 #endregion
 
 #region Title
 //Title
 Console.OutputEncoding = Encoding.UTF8;
 Console.InputEncoding = Encoding.UTF8;
-FigletText fText = new FigletText(FigletFont.Default, AppName == null ? "FFChapters2" : AppName).Centered().Color(Color.Blue);
+FigletText fText = new FigletText(FigletFont.Default, AppName ?? "FFChapters2").Centered().Color(Color.Blue);
 #if DEBUG
 AppVersion += $" [red]Debug[/]";
 #else
@@ -294,7 +294,7 @@ Parser.Default.ParseArguments<Options>(args)
                        if (o.ChapterLength > 0 && o.ChapterLength < 16)
                        {
                            Length = (int)o.ChapterLength;
-                           AnsiConsole.MarkupLine($"[green]Chapter length: {Length.ToString()} (Minutes)[/]");
+                           AnsiConsole.MarkupLine($"[green]Chapter length: {Length} (Minutes)[/]");
                        }
 
                        if (o.Close)
@@ -348,7 +348,7 @@ if (Length == 0)
     prompt.AddChoice("1 minute");
     for (int i = 2; i < 16; i++)
     {
-        prompt.AddChoice($"{i.ToString()} minutes");
+        prompt.AddChoice($"{i} minutes");
     }
     string selection = AnsiConsole.Prompt(prompt);
     AnsiConsole.Markup($"[green]{selection}[/]");
@@ -362,15 +362,29 @@ AnsiConsole.WriteLine("");
 #region FFmpeg execution
 AnsiConsole.Write(new Rule("[blue]FFmpeg extract scene changes[/]"));
 AnsiConsole.WriteLine("");
-AnsiConsole.Status()
-    .Spinner(Spinner.Known.Material)
-    .SpinnerStyle(Style.Parse("green bold"))
-    .AutoRefresh(false)
-    .Start("[green]FFmpeg running[/]", ctx =>
+AnsiConsole
+    //.Status()
+    //.Spinner(Spinner.Known.Material)
+    //.SpinnerStyle(Style.Parse("green bold"))
+    //.AutoRefresh(false)
+    .Progress()
+    .AutoRefresh(true)
+    .HideCompleted(true)
+    .Columns(new ProgressColumn[]
     {
+        new TaskDescriptionColumn(),    // Task description
+        new ProgressBarColumn(),        // Progress bar
+        new PercentageColumn(),         // Percentage
+        new RemainingTimeColumn(),      // Remaining time
+        new SpinnerColumn(),            // Spinner
+    })
+    .Start(ctx =>
+    {
+        var task = ctx.AddTask("[green]Extracting scene changes[/]");
         try
         {
-            Process RunProcess = new Process();
+            //Prepare FFmpeg process for chapter extraction
+            Process RunProcess = new();
             if (OSLinux)
             {
                 RunProcess.StartInfo.FileName = $"{@FFmpeg}";               
@@ -395,25 +409,56 @@ AnsiConsole.Status()
             void DataReadHandler(object sender, DataReceivedEventArgs e)
             {
                 if (!String.IsNullOrEmpty(e.Data))
+                {
+                    //Add aoutput to raw list
                     ScenesRaw.Add(e.Data);
+
+                    //Extract inputfile duration and actual progress
+                    if (Duration == 0)
+                    {
+                        buffer = Regex.Match(string.Join("", ScenesRaw), @"Duration: \d\d:\d\d:\d\d.\d\d").Value.Trim().Replace("Duration: ", "", StringComparison.InvariantCultureIgnoreCase);
+                        if (!string.IsNullOrEmpty(buffer))
+                        {
+                            Duration = Convert.ToInt32(buffer.Substring(0, 2)) * 3600 + Convert.ToInt32(buffer.Substring(3, 2)) * 60 + Convert.ToInt32(buffer.Substring(6, 2));
+                            task.MaxValue = Duration;
+                        }
+                    }
+                    else
+                    {
+                        buffer = Regex.Match(ScenesRaw.Last(), @" t:\d*\.\d* ").Value.Trim().Replace("t:", "", StringComparison.InvariantCultureIgnoreCase);
+                        if (!string.IsNullOrEmpty(buffer))
+                            Progress = Convert.ToInt32(buffer.Substring(0,buffer.IndexOf(".")));
+                        else
+                        {
+                            buffer = Regex.Match(ScenesRaw.Last(), @" pts_time:\d*\.\d* ").Value.Trim().Replace("pts_time:", "", StringComparison.InvariantCultureIgnoreCase);
+                            if (!string.IsNullOrEmpty(buffer))
+                                Progress = Convert.ToInt32(buffer.Substring(0, buffer.IndexOf(".")));
+                        }
+                    }
+                }
+
             }
             RunProcess.ErrorDataReceived += DataReadHandler;
             RunProcess.OutputDataReceived += DataReadHandler;
 
+            //Start FFmpeg chapter extraction
             var Start = DateTime.Now;
             AnsiConsole.MarkupLine("[Green]Start: " + Start.ToLongTimeString() + "[/]");
             RunProcess.Start();
             RunProcess.BeginOutputReadLine();
             RunProcess.BeginErrorReadLine();
+
+            //Show progressbar with time estimation
             while (!RunProcess.HasExited)
             {
-                ctx.Refresh();
+                if (task.Value < Progress && Duration != 0)
+                    task.Value = Progress;
             }
+            task.Value = task.MaxValue;
 
             var Stop = DateTime.Now;
             AnsiConsole.MarkupLine("[Green]Stop:  " + Stop.ToLongTimeString() + "[/]");
             AnsiConsole.MarkupLine("[Green]Time:  " + (Stop - Start).ToString(@"hh\:mm\:ss") + "[/]");
-            ctx.Refresh();
         }
         catch (Exception e)
         {
@@ -457,7 +502,7 @@ AnsiConsole.Progress().Start(ctx =>
                 if (ScenesRaw[i].ToLowerInvariant().Contains("parsed_showinfo") && ScenesRaw[i].ToLowerInvariant().Contains("pts_time"))
                 {
                     buffer = "";
-                    //support pts_time format for ffmpeg versions <=5.1.2 and >=6.0
+                    //Support pts_time format for ffmpeg versions <=5.1.2 and >=6.0
                     buffer = Regex.Match(ScenesRaw[i], "(?<=pts_time:)(.*)(?=\\sduration:)").Value.Trim().Replace(" ", "");   //ffmpeg version >=6.0
                     if (buffer.Length == 0 || buffer == null)
                         buffer = Regex.Match(ScenesRaw[i], "(?<=pts_time:)(.*)(?=pos:)").Value.Trim().Replace(" ", "");       //ffmpeg version <=5.1.2                  
@@ -495,7 +540,7 @@ if (ScenesAll.Count == 0)
 ScenesAll = ScenesAll.Distinct().ToList();
 ScenesAll.Sort();
 
-//remove trailing Spaces which were needed for correct sorting
+//Remove trailing Spaces which were needed for correct sorting
 for (int i = 0; i < ScenesAll.Count; i++)
 {
     ScenesAll[i] = ScenesAll[i].Trim();
@@ -788,7 +833,7 @@ string GetFFmpegVersion()
     try
     {
         buffer = string.Empty;
-        Process RunProcess = new Process();
+        Process RunProcess = new();
         if (OSLinux)
         {
             RunProcess.StartInfo.FileName = $"{@FFmpeg}";
