@@ -36,7 +36,7 @@ bool ChapterStyle1 = false;
 bool ChapterStyle2 = false;
 bool OSLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux);
 //GitVersion will be only be actualized/overwritten when using Cake build!
-const string GitVersion = "git-8b6616e";
+const string GitVersion = "git-7f23622";
 #endregion
 
 #region Title
@@ -53,6 +53,8 @@ AppVersion += $" [green]Release[/]";
 AppVersion += $" [green].NET6[/]";
 #elif NET7_0
 AppVersion += $" [green].NET7[/]";
+#elif NET8_0
+AppVersion += $" [green].NET8[/]";
 #endif
 if (GitVersion != "") AppVersion += $" [green]{GitVersion}[/]";
 AnsiConsole.Profile.Out.SetEncoding(Encoding.UTF8);
@@ -913,7 +915,6 @@ public class Options
 
     [Option('s', "style", Default = "all", Required = false, HelpText = "Set chapter style (chapters, meta, all)\n[chapters = simple chapter format Matroska compatible, meta = METAINFO ffmpeg compatible]")]
     public string ChapterStyle { get; set; } = "";
-
 }
 #endregion
 
