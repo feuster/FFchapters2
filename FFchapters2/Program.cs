@@ -36,7 +36,7 @@ bool ChapterStyle1 = false;
 bool ChapterStyle2 = false;
 bool OSLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux);
 //GitVersion will be only be actualized/overwritten when using Cake build!
-const string GitVersion = "git-7f23622";
+const string GitVersion = "git-912495d";
 #endregion
 
 #region Title
