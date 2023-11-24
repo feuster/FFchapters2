@@ -6,8 +6,9 @@
 #addin nuget:?package=Cake.FileHelpers&version=6.1.3
 
 var artifacts = Argument("artifacts", "artifacts");
+var release = Argument("release", "Release");
 var configuration = Argument("configuration", "Release");
-var framework = Argument("framework", "net6.0");
+var framework = Argument("framework", "net8.0");
 var runtime = Argument("runtime", "win-x64");
 var target = Argument("target", "ZipRelease");
 IEnumerable<string> IGitVersion;
@@ -70,6 +71,13 @@ Task("CleanArtifacts")
         CleanDirectory($"./{artifacts}");
     });
 
+Task("CleanRelease")
+    .Does(() =>
+    {
+        Console.WriteLine(Environment.NewLine + $"Cleaning folder: ./Release");
+        CleanDirectory($"./{release}");
+    });
+
 Task("RegexGitVersion")
     .IsDependentOn("GitVersion")
     .Does(() =>
@@ -85,12 +93,16 @@ Task("RegexGitVersion")
 
 Task("Build")
     .IsDependentOn("Clean")
+    .IsDependentOn("CleanRelease")
     .IsDependentOn("RegexGitVersion")
     .Does(() =>
     {
         DotNetBuild("./FFchapters2/FFchapters2.csproj", new DotNetBuildSettings
         {
             Configuration = configuration,
+            Framework = framework,
+            Runtime = runtime,
+            OutputDirectory = Context.Environment.WorkingDirectory + $"/{release}/"
         });
     });
 
@@ -123,7 +135,7 @@ Task("Test")
         DotNetTest("./FFchapters2.sln", new DotNetTestSettings
         {
             Configuration = configuration,
-            NoBuild = true,
+            NoBuild = true
         });
     });
 
@@ -133,10 +145,10 @@ Task("ZipRelease")
     .Does(() =>
     {
         var WorkDir = Context.Environment.WorkingDirectory;
-        if (FileExists($"{WorkDir}/Release/FFchapters2_V{sAssemblyVersion}_{runtime}_{SGitVersion}.zip"))
+        if (FileExists($"{WorkDir}/{release}/FFchapters2_V{sAssemblyVersion}_{runtime}_{SGitVersion}.zip"))
         {
             Console.Write(Environment.NewLine + $"Deleting existing FFchapters2_V{sAssemblyVersion}_{runtime}_{SGitVersion}.zip");
-            DeleteFile($"{WorkDir}/Release/FFchapters2_V{sAssemblyVersion}_{runtime}_{SGitVersion}.zip");
+            DeleteFile($"{WorkDir}/{release}/FFchapters2_V{sAssemblyVersion}_{runtime}_{SGitVersion}.zip");
         }
         Context.Environment.WorkingDirectory +=  $"/{artifacts}/";
         Console.Write(Environment.NewLine + "Start Zipping...");
@@ -186,12 +198,12 @@ Task("ZipRelease")
             {
                 Files = files,
                 CompressionMethod = method,
-                Archive = new FilePath($"{WorkDir}/Release/FFchapters2_V{sAssemblyVersion}_{runtime}_{SGitVersion}.zip"),
+                Archive = new FilePath($"{WorkDir}/{release}/FFchapters2_V{sAssemblyVersion}_{runtime}_{SGitVersion}.zip"),
             }
         });
         Context.Environment.WorkingDirectory =  WorkDir;
         Console.WriteLine("finished!" + Environment.NewLine);
-        if (FileExists($"{WorkDir}/Release/FFchapters2_V{sAssemblyVersion}_{runtime}_{SGitVersion}.zip"))
+        if (FileExists($"{WorkDir}/{release}/FFchapters2_V{sAssemblyVersion}_{runtime}_{SGitVersion}.zip"))
             Console.WriteLine($"FFchapters2_V{sAssemblyVersion}_{runtime}_{SGitVersion}.zip successfully created!");
         else
             Console.WriteLine($"FFchapters2_V{sAssemblyVersion}_{runtime}_{SGitVersion}.zip creation failed!");

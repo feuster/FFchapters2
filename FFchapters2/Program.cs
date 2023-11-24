@@ -36,7 +36,22 @@ bool ChapterStyle1 = false;
 bool ChapterStyle2 = false;
 bool OSLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux);
 //GitVersion will be only be actualized/overwritten when using Cake build!
-const string GitVersion = "git-8b6616e";
+const string GitVersion = "git-b60816a";
+#endregion
+
+#region Global exception handler
+void unhandledExceptionEventHandler(object sender, UnhandledExceptionEventArgs args)
+{
+    Exception e = (Exception)args.ExceptionObject;
+    AnsiConsole.MarkupLineInterpolated($"[red]Exception: {e.Message}[/]");
+    if (e.InnerException != null)
+        AnsiConsole.MarkupLineInterpolated($"[red]InnerException: {e.InnerException.Message}[/]");
+    AnsiConsole.MarkupLine($"[red]Abort chapter creation![/]");
+    AnyKey();
+    Environment.Exit(-1);
+}
+
+AppDomain.CurrentDomain.UnhandledException += unhandledExceptionEventHandler;
 #endregion
 
 #region Title
@@ -53,6 +68,8 @@ AppVersion += $" [green]Release[/]";
 AppVersion += $" [green].NET6[/]";
 #elif NET7_0
 AppVersion += $" [green].NET7[/]";
+#elif NET8_0
+AppVersion += $" [green].NET8[/]";
 #endif
 if (GitVersion != "") AppVersion += $" [green]{GitVersion}[/]";
 AnsiConsole.Profile.Out.SetEncoding(Encoding.UTF8);
@@ -78,7 +95,7 @@ Parser.Default.ParseArguments<Options>(args)
                                if (Path.GetDirectoryName(o.FFmpeg) != string.Empty)
                                {
                                    FFmpeg = o.FFmpeg;
-                                   AnsiConsole.MarkupLine($"[green]FFmpeg path: \"{ShortString(FFmpeg, ShortStringMaxLength)}\"[/]");
+                                   AnsiConsole.MarkupLineInterpolated($"[green]FFmpeg path: \"{ShortString(FFmpeg, ShortStringMaxLength)}\"[/]");
                                }
                                else
                                {
@@ -89,15 +106,15 @@ Parser.Default.ParseArguments<Options>(args)
                                    if (buffer == null)
                                    {
                                        FFmpeg = o.FFmpeg;
-                                       AnsiConsole.MarkupLine($"[green]FFmpeg path: \"{ShortString(FFmpeg, ShortStringMaxLength)}\"[/]");
+                                       AnsiConsole.MarkupLineInterpolated($"[green]FFmpeg path: \"{ShortString(FFmpeg, ShortStringMaxLength)}\"[/]");
                                    }
                                    else
                                    {
                                        FFmpeg = buffer + "\\" + o.FFmpeg;
-                                       AnsiConsole.MarkupLine($"[green]FFmpeg path: \"{ShortString(FFmpeg, ShortStringMaxLength)}\" (in Environment Path)[/]");
+                                       AnsiConsole.MarkupLineInterpolated($"[green]FFmpeg path: \"{ShortString(FFmpeg, ShortStringMaxLength)}\" (in Environment Path)[/]");
                                    }
                                }
-                               
+
                            }
                            else
                            {
@@ -107,12 +124,12 @@ Parser.Default.ParseArguments<Options>(args)
                                    buffer = Environment.GetEnvironmentVariable("PATH").Split(';').Where(s => File.Exists(Path.Combine(s, "ffmpeg.exe"))).FirstOrDefault();
                                if (buffer == null)
                                {
-                                   AnsiConsole.MarkupLine($"[yellow]FFmpeg path: \"{ShortString(o.FFmpeg, ShortStringMaxLength)}\" not found[/]");
+                                   AnsiConsole.MarkupLineInterpolated($"[yellow]FFmpeg path: \"{ShortString(o.FFmpeg, ShortStringMaxLength)}\" not found[/]");
                                    if (OSLinux)
                                        FFmpeg = "/usr/bin/local/ffmpeg";
                                    else
                                        FFmpeg = "ffmpeg.exe";
-                                   AnsiConsole.MarkupLine($"[green]FFmpeg path: \"{ShortString(FFmpeg, ShortStringMaxLength)}\" (Default Fallback)[/]");
+                                   AnsiConsole.MarkupLineInterpolated($"[green]FFmpeg path: \"{ShortString(FFmpeg, ShortStringMaxLength)}\" (Default Fallback)[/]");
                                }
                                else
                                {
@@ -120,7 +137,7 @@ Parser.Default.ParseArguments<Options>(args)
                                        FFmpeg = buffer + "\\ffmpeg.exe";
                                    else
                                        FFmpeg = buffer + "\\ffmpeg.exe";
-                                   AnsiConsole.MarkupLine($"[green]FFmpeg path: \"{ShortString(FFmpeg, ShortStringMaxLength)}\" (in Environment Path)[/]");
+                                   AnsiConsole.MarkupLineInterpolated($"[green]FFmpeg path: \"{ShortString(FFmpeg, ShortStringMaxLength)}\" (in Environment Path)[/]");
                                }
                            }
                        }
@@ -136,7 +153,7 @@ Parser.Default.ParseArguments<Options>(args)
                        //FFmpeg version
                        FFmpegVersion = GetFFmpegVersion();
                        if (FFmpegVersion != string.Empty)
-                           AnsiConsole.MarkupLine($"[green]FFmpeg version: {FFmpegVersion}[/]");
+                           AnsiConsole.MarkupLineInterpolated($"[green]FFmpeg version: {FFmpegVersion}[/]");
                        else
                            AnsiConsole.MarkupLine($"[yellow]FFmpeg version: unknown[/]");
 
@@ -148,17 +165,17 @@ Parser.Default.ParseArguments<Options>(args)
                                if (o.InputFile.Substring(0, 2) == ".\\")
                                {
                                    InputFile = Environment.CurrentDirectory + o.InputFile.Replace(".\\", "\\");
-                                   AnsiConsole.MarkupLine($"[green]Inputfile path: \"{ShortString(InputFile, ShortStringMaxLength)}\" (Auto)[/]");
+                                   AnsiConsole.MarkupLineInterpolated($"[green]Inputfile path: \"{ShortString(InputFile, ShortStringMaxLength)}\" (Auto)[/]");
                                }
                                else
                                {
                                    InputFile = o.InputFile;
-                                   AnsiConsole.MarkupLine($"[green]Inputfile path: \"{ShortString(InputFile, ShortStringMaxLength)}\"[/]");
+                                   AnsiConsole.MarkupLineInterpolated($"[green]Inputfile path: \"{ShortString(InputFile, ShortStringMaxLength)}\"[/]");
                                }
                            }
                            else
                            {
-                               AnsiConsole.MarkupLine($"[yellow]Inputfile path: \"{ShortString(o.InputFile, ShortStringMaxLength)}\" not found[/]");
+                               AnsiConsole.MarkupLineInterpolated($"[yellow]Inputfile path: \"{ShortString(o.InputFile, ShortStringMaxLength)}\" not found[/]");
                                AnsiConsole.MarkupLine($"[red]Inputfile missing! Abort chapter creation![/]");
                                AnyKey();
                                Environment.Exit(-1);
@@ -180,7 +197,7 @@ Parser.Default.ParseArguments<Options>(args)
                                        InputFile = Environment.CurrentDirectory + args[0].Replace(".\\", "\\");
                                    else
                                        InputFile = args[0];
-                                   AnsiConsole.MarkupLine($"[green]Inputfile path: \"{ShortString(InputFile, ShortStringMaxLength)}\"[/]");
+                                   AnsiConsole.MarkupLineInterpolated($"[green]Inputfile path: \"{ShortString(InputFile, ShortStringMaxLength)}\"[/]");
                                    o.ChapterFile = Path.ChangeExtension(InputFile, ".txt");
                                    o.ChapterLength = 5;
                                    o.IgnoreExistingChapters = true;
@@ -224,18 +241,18 @@ Parser.Default.ParseArguments<Options>(args)
                        {
                            ChapterFile = o.ChapterFile;
                            if (ChapterStyle1 && !ChapterStyle2)
-                               AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\"[/]");
+                               AnsiConsole.MarkupLineInterpolated($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\"[/]");
                            else if (!ChapterStyle1 && ChapterStyle2)
                            {
                                MetaFile = ChapterFile;
-                               AnsiConsole.MarkupLine($"[green]Metafile path: \"{ShortString(MetaFile, ShortStringMaxLength)}\"[/]");
+                               AnsiConsole.MarkupLineInterpolated($"[green]Metafile path: \"{ShortString(MetaFile, ShortStringMaxLength)}\"[/]");
                            }
                            else if (ChapterStyle1 && ChapterStyle2)
                            {
                                //MetaFile = ChapterFile + ".meta";
                                MetaFile = Path.ChangeExtension(ChapterFile, ".meta");
-                               AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\"[/]");
-                               AnsiConsole.MarkupLine($"[green]Metafile path: \"{ShortString(MetaFile, ShortStringMaxLength)}\" (Auto)[/]");
+                               AnsiConsole.MarkupLineInterpolated($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\"[/]");
+                               AnsiConsole.MarkupLineInterpolated($"[green]Metafile path: \"{ShortString(MetaFile, ShortStringMaxLength)}\" (Auto)[/]");
                            }
                        }
                        else if (o.ChapterFile == InputFile)
@@ -244,21 +261,21 @@ Parser.Default.ParseArguments<Options>(args)
                            {
                                ChapterFile = InputFile + ".txt";
                                AnsiConsole.MarkupLine($"[yellow]Chapterfile and Inputfile have the same path! Autocorrecting path![/]");
-                               AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
+                               AnsiConsole.MarkupLineInterpolated($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
                            }
                            else if (!ChapterStyle1 && ChapterStyle2)
                            {
                                MetaFile = InputFile + ".meta";
                                AnsiConsole.MarkupLine($"[yellow]Metafile and Inputfile have the same path! Autocorrecting path![/]");
-                               AnsiConsole.MarkupLine($"[green]Metafile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
+                               AnsiConsole.MarkupLineInterpolated($"[green]Metafile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
                            }
                            else if (ChapterStyle1 && ChapterStyle2)
                            {
                                ChapterFile = InputFile + ".txt";
                                MetaFile = InputFile + ".meta";
                                AnsiConsole.MarkupLine($"[yellow]Chapterfile/Metafile and Inputfile have the same path! Autocorrecting path![/]");
-                               AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
-                               AnsiConsole.MarkupLine($"[green]Metafile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
+                               AnsiConsole.MarkupLineInterpolated($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
+                               AnsiConsole.MarkupLineInterpolated($"[green]Metafile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
                            }
                        }
                        else
@@ -267,21 +284,21 @@ Parser.Default.ParseArguments<Options>(args)
                            {
                                AnsiConsole.MarkupLine($"[yellow]Chapterfile path missing! Autocreating path![/]");
                                ChapterFile = Path.ChangeExtension(InputFile, ".txt");
-                               AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
+                               AnsiConsole.MarkupLineInterpolated($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
                            }
                            else if (!ChapterStyle1 && ChapterStyle2)
                            {
                                AnsiConsole.MarkupLine($"[yellow]Metafile path missing! Autocreating path![/]");
                                MetaFile = Path.ChangeExtension(InputFile, ".meta");
-                               AnsiConsole.MarkupLine($"[green]Metafile path: \"{ShortString(MetaFile, ShortStringMaxLength)}\" (Auto)[/]");
+                               AnsiConsole.MarkupLineInterpolated($"[green]Metafile path: \"{ShortString(MetaFile, ShortStringMaxLength)}\" (Auto)[/]");
                            }
                            else if (ChapterStyle1 && ChapterStyle2)
                            {
                                AnsiConsole.MarkupLine($"[yellow]Chapterfile/Metafile paths missing! Autocreating path![/]");
                                ChapterFile = Path.ChangeExtension(InputFile, ".txt");
                                MetaFile = Path.ChangeExtension(InputFile, ".meta");
-                               AnsiConsole.MarkupLine($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
-                               AnsiConsole.MarkupLine($"[green]Metafile path: \"{ShortString(MetaFile, ShortStringMaxLength)}\" (Auto)[/]");
+                               AnsiConsole.MarkupLineInterpolated($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\" (Auto)[/]");
+                               AnsiConsole.MarkupLineInterpolated($"[green]Metafile path: \"{ShortString(MetaFile, ShortStringMaxLength)}\" (Auto)[/]");
                            }
                            else
                            {
@@ -387,7 +404,7 @@ AnsiConsole
             Process RunProcess = new();
             if (OSLinux)
             {
-                RunProcess.StartInfo.FileName = $"{@FFmpeg}";               
+                RunProcess.StartInfo.FileName = $"{@FFmpeg}";
                 RunProcess.StartInfo.Arguments = $"-hide_banner -i \"{@InputFile}\" -vf blackdetect=d=1.0:pic_th=0.90:pix_th=0.00,blackframe=98:32,\"select='gt(scene,0.10)',showinfo\" -an -f null -";
             }
             else
@@ -427,7 +444,7 @@ AnsiConsole
                     {
                         buffer = Regex.Match(ScenesRaw.Last(), @" t:\d*\.\d* ").Value.Trim().Replace("t:", "", StringComparison.InvariantCultureIgnoreCase);
                         if (!string.IsNullOrEmpty(buffer))
-                            Progress = Convert.ToInt32(buffer.Substring(0,buffer.IndexOf(".")));
+                            Progress = Convert.ToInt32(buffer.Substring(0, buffer.IndexOf(".")));
                         else
                         {
                             buffer = Regex.Match(ScenesRaw.Last(), @" pts_time:\d*\.\d* ").Value.Trim().Replace("pts_time:", "", StringComparison.InvariantCultureIgnoreCase);
@@ -733,9 +750,9 @@ if (ChapterStyle1)
         AnsiConsole.MarkupLine("[White on Red]Exception: " + e.Message + "[/]");
     }
     if (File.Exists(ChapterFile))
-        AnsiConsole.MarkupLine($"[Bold White on Green]Chapter file \"{ShortString(ChapterFile, ShortStringMaxLength)}\" created[/]");
+        AnsiConsole.MarkupLineInterpolated($"[Bold White on Green]Chapter file \"{ShortString(ChapterFile, ShortStringMaxLength)}\" created[/]");
     else
-        AnsiConsole.MarkupLine($"[Bold White on Red]Chapter file \"{ShortString(ChapterFile, ShortStringMaxLength)}\" not created[/]");
+        AnsiConsole.MarkupLineInterpolated($"[Bold White on Red]Chapter file \"{ShortString(ChapterFile, ShortStringMaxLength)}\" not created[/]");
     Console.WriteLine("");
 }
 #endregion
@@ -783,9 +800,9 @@ if (ChapterStyle2)
         AnsiConsole.MarkupLine("[White on Red]Exception: " + e.Message + "[/]");
     }
     if (File.Exists(MetaFile))
-        AnsiConsole.MarkupLine($"[Bold White on Green]Chapter file \"{ShortString(MetaFile, ShortStringMaxLength)}\" created[/]");
+        AnsiConsole.MarkupLineInterpolated($"[Bold White on Green]Chapter file \"{ShortString(MetaFile, ShortStringMaxLength)}\" created[/]");
     else
-        AnsiConsole.MarkupLine($"[Bold White on Red]Chapter file \"{ShortString(MetaFile, ShortStringMaxLength)}\" not created[/]");
+        AnsiConsole.MarkupLineInterpolated($"[Bold White on Red]Chapter file \"{ShortString(MetaFile, ShortStringMaxLength)}\" not created[/]");
     Console.WriteLine("");
 }
 #endregion
@@ -913,7 +930,6 @@ public class Options
 
     [Option('s', "style", Default = "all", Required = false, HelpText = "Set chapter style (chapters, meta, all)\n[chapters = simple chapter format Matroska compatible, meta = METAINFO ffmpeg compatible]")]
     public string ChapterStyle { get; set; } = "";
-
 }
 #endregion
 
