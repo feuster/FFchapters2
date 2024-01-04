@@ -36,7 +36,8 @@ bool ChapterStyle1 = false;
 bool ChapterStyle2 = false;
 bool OSLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux);
 //GitVersion will be only be actualized/overwritten when using Cake build!
-const string GitVersion = "git-b60816a";
+const string GitVersion = "git-b246b90";
+const string Homepage = "https://github.com/feuster/FFchapters2";
 #endregion
 
 #region Global exception handler
@@ -72,6 +73,11 @@ AppVersion += $" [green].NET7[/]";
 AppVersion += $" [green].NET8[/]";
 #endif
 if (GitVersion != "") AppVersion += $" [green]{GitVersion}[/]";
+if (DateTime.Now.Year > 2023)
+    AppVersion += $" [green]© 2023-{DateTime.Now.Year} Alexander Feuster[/]";
+else
+    AppVersion += $" [green]© 2023 Alexander Feuster[/]";
+AppVersion += $" [green]{Homepage}[/]";
 AnsiConsole.Profile.Out.SetEncoding(Encoding.UTF8);
 AnsiConsole.Clear();
 AnsiConsole.Write(fText);
