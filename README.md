@@ -22,7 +22,7 @@ The FFmpeg binary can be utilized by FFchapter2 via the following options:
 ## License / Copyright
 FFchapters2 is licensed under [GPL-2.0-only](./LICENSE).
 
-© Alexander Feuster 2023
+© Alexander Feuster 2023-2024
 
 ## Running Demo
 ![Running Demo](./Running.gif)
