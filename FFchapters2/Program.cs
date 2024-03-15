@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
 #endregion
 
 #region Declarations
@@ -28,16 +29,21 @@ string InputFile = "";
 string FFmpeg = "";
 string FFmpegVersion = "";
 string MetaFile = "";
+string RawFile = "";
 string AppVersion = $"[green]Version: {"V" + Assembly.GetEntryAssembly().GetName().Version.Major.ToString() + "." + Assembly.GetEntryAssembly().GetName().Version.MinorRevision.ToString()}[/]";
 string? AppName = Assembly.GetEntryAssembly().GetName().Name;
 bool Close = false;
 bool IgnoreExistingChapters = false;
 bool ChapterStyle1 = false;
 bool ChapterStyle2 = false;
-bool OSLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux);
+bool RawChapters = false;
+bool OSLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 //GitVersion will be only be actualized/overwritten when using Cake build!
-const string GitVersion = "git-b246b90";
+const string GitVersion = "git-e3510d1";
 const string Homepage = "https://github.com/feuster/FFchapters2";
+
+[DllImport("kernel32.dll", EntryPoint = "AllocConsole", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+static extern int AllocConsole();
 #endregion
 
 #region Global exception handler
@@ -57,6 +63,7 @@ AppDomain.CurrentDomain.UnhandledException += unhandledExceptionEventHandler;
 
 #region Title
 //Title
+AllocConsole();
 Console.OutputEncoding = Encoding.UTF8;
 Console.InputEncoding = Encoding.UTF8;
 FigletText fText = new FigletText(FigletFont.Default, AppName ?? "FFChapters2").Centered().Color(Color.Blue);
@@ -72,11 +79,11 @@ AppVersion += $" [green].NET7[/]";
 #elif NET8_0
 AppVersion += $" [green].NET8[/]";
 #endif
-if (GitVersion != "") AppVersion += $" [green]{GitVersion}[/]";
+if (!string.IsNullOrEmpty(GitVersion)) AppVersion += $" [green]{GitVersion}[/]";
 if (DateTime.Now.Year > 2023)
-    AppVersion += $" [green]© 2023-{DateTime.Now.Year} Alexander Feuster[/]";
+    AppVersion += $" [green]Â© 2023-{DateTime.Now.Year} Alexander Feuster[/]";
 else
-    AppVersion += $" [green]© 2023 Alexander Feuster[/]";
+    AppVersion += $" [green]Â© 2023 Alexander Feuster[/]";
 AppVersion += $" [green]{Homepage}[/]";
 AnsiConsole.Profile.Out.SetEncoding(Encoding.UTF8);
 AnsiConsole.Clear();
@@ -255,7 +262,6 @@ Parser.Default.ParseArguments<Options>(args)
                            }
                            else if (ChapterStyle1 && ChapterStyle2)
                            {
-                               //MetaFile = ChapterFile + ".meta";
                                MetaFile = Path.ChangeExtension(ChapterFile, ".meta");
                                AnsiConsole.MarkupLineInterpolated($"[green]Chapterfile path: \"{ShortString(ChapterFile, ShortStringMaxLength)}\"[/]");
                                AnsiConsole.MarkupLineInterpolated($"[green]Metafile path: \"{ShortString(MetaFile, ShortStringMaxLength)}\" (Auto)[/]");
@@ -314,7 +320,13 @@ Parser.Default.ParseArguments<Options>(args)
                            }
                        }
 
-                       if (o.ChapterLength > 0 && o.ChapterLength < 16)
+                       if (o.RawChapters)
+                       {
+                           RawChapters = o.RawChapters;
+                           AnsiConsole.MarkupLine($"[yellow]Raw chapters: using all raw scenes for chapters (ignores 'length' and is not recommended!) [/]");
+                       }
+
+                       if (o.ChapterLength > 0 && o.ChapterLength < 31 && !RawChapters)
                        {
                            Length = (int)o.ChapterLength;
                            AnsiConsole.MarkupLine($"[green]Chapter length: {Length} (Minutes)[/]");
@@ -357,7 +369,7 @@ Parser.Default.ParseArguments<Options>(args)
 
 #region Menu
 //Menu
-if (Length == 0)
+if (Length == 0 && !RawChapters)
 {
     AnsiConsole.Write(new Rule("[blue]Chapter length[/]"));
     AnsiConsole.WriteLine("");
@@ -572,42 +584,68 @@ AnsiConsole.MarkupLine("[Green]ScenesAll count:  " + ScenesAll.Count.ToString() 
 AnsiConsole.WriteLine("");
 #endregion
 
-#region Keep only scenes within chapter length
-AnsiConsole.Write(new Rule("[blue]Keep only scenes within chapter length[/]"));
-AnsiConsole.Progress().Start(ctx =>
+#region Keep only scenes within chapter length or use all raw scenes
+if (!RawChapters)
 {
-    //Define console output task
-    var task1 = ctx.AddTask("[green]Keep only scenes within chapter length[/]");
-    int Chapter = 1;
-    decimal MinimumNextChapter = (decimal)(Chapter * Length);
-    ScenesSelected.Clear();
-    var TimestampMax = Convert.ToDecimal(ScenesAll[ScenesAll.Count - 1]);
-
-    task1.MaxValue = ScenesAll.Count;
-    while (!ctx.IsFinished)
+    AnsiConsole.Write(new Rule("[blue]Keep only scenes within chapter length[/]"));
+    AnsiConsole.Progress().Start(ctx =>
     {
-        for (int i = 0; i < ScenesAll.Count; i++)
+        //Define console output task
+        var task1 = ctx.AddTask("[green]Keep only scenes within chapter length[/]");
+        int Chapter = 1;
+        decimal MinimumNextChapter = (decimal)(Chapter * Length);
+        ScenesSelected.Clear();
+        var TimestampMax = Convert.ToDecimal(ScenesAll[ScenesAll.Count - 1]);
+
+        task1.MaxValue = ScenesAll.Count;
+        while (!ctx.IsFinished)
         {
-            var Timestamp = Convert.ToDecimal(ScenesAll[i]);
-            if ((decimal)((Chapter + 1) * Length) < Timestamp)
+            for (int i = 0; i < ScenesAll.Count; i++)
             {
-                Chapter++;
-                MinimumNextChapter = (decimal)(Chapter * Length);
-            }
-            else
-            {
-                if (Timestamp >= MinimumNextChapter && MinimumNextChapter <= TimestampMax)
+                var Timestamp = Convert.ToDecimal(ScenesAll[i]);
+                if ((decimal)((Chapter + 1) * Length) < Timestamp)
                 {
-                    ScenesSelected.Add(ScenesAll[i]);
                     Chapter++;
                     MinimumNextChapter = (decimal)(Chapter * Length);
                 }
+                else
+                {
+                    if (Timestamp >= MinimumNextChapter && MinimumNextChapter <= TimestampMax)
+                    {
+                        ScenesSelected.Add(ScenesAll[i]);
+                        Chapter++;
+                        MinimumNextChapter = (decimal)(Chapter * Length);
+                    }
+                }
+                task1.Increment(1);
+                ctx.Refresh();
             }
-            task1.Increment(1);
-            ctx.Refresh();
         }
-    }
-});
+    });
+}
+else
+{
+    AnsiConsole.Write(new Rule("[blue]Keep all raw scenes[/]"));
+    AnsiConsole.Progress().Start(ctx =>
+    {
+        //Define console output task
+        var task1 = ctx.AddTask("[green]Keep all raw scenes[/]");
+        int Chapter = 1;
+        ScenesSelected.Clear();
+
+        task1.MaxValue = ScenesAll.Count;
+        while (!ctx.IsFinished)
+        {
+            for (int i = 0; i < ScenesAll.Count; i++)
+            {
+                ScenesSelected.Add(ScenesAll[i]);
+                Chapter++;
+                task1.Increment(1);
+                ctx.Refresh();
+            }
+        }
+    });
+}
 
 //Sort selected scenes
 ScenesSelected = ScenesSelected.Distinct().ToList();
@@ -813,6 +851,55 @@ if (ChapterStyle2)
 }
 #endregion
 
+#region Create raw file
+if (RawChapters)
+{
+    if (!string.IsNullOrEmpty(ChapterFile))
+        RawFile = Path.ChangeExtension(ChapterFile, ".raw");
+    else if (!string.IsNullOrEmpty(MetaFile))
+        RawFile = Path.ChangeExtension(MetaFile, ".raw");
+    else
+        RawFile = Path.ChangeExtension(InputFile, ".raw");
+    AnsiConsole.Write(new Rule("[blue]Create raw scene timestamp entries[/]"));
+    AnsiConsole.Progress().Start(ctx =>
+    {
+        Chapters.Clear();
+
+        //Define console output task
+        var task1 = ctx.AddTask("[green]Convert scenes to timestamps[/]");
+
+        task1.MaxValue = ChaptersRaw.Count;
+        while (!ctx.IsFinished)
+        {
+            for (int i = 1; i <= ChaptersRaw.Count; i++)
+            {
+                Chapters.Add(ChaptersRaw[i - 1]);
+                task1.Increment(1);
+                ctx.Refresh();
+            }
+        }
+    });
+
+    //Save chapter file
+    AnsiConsole.Write(new Rule("[blue]Create raw file[/]"));
+    AnsiConsole.WriteLine("");
+    try
+    {
+        File.Delete(RawFile);
+        File.WriteAllLines(RawFile, Chapters);
+    }
+    catch (Exception e)
+    {
+        AnsiConsole.MarkupLine("[White on Red]Exception: " + e.Message + "[/]");
+    }
+    if (File.Exists(RawFile))
+        AnsiConsole.MarkupLineInterpolated($"[Bold White on Green]Raw file \"{ShortString(ChapterFile, ShortStringMaxLength)}\" created[/]");
+    else
+        AnsiConsole.MarkupLineInterpolated($"[Bold White on Red]Raw file \"{ShortString(ChapterFile, ShortStringMaxLength)}\" not created[/]");
+    Console.WriteLine("");
+}
+#endregion
+
 #region End
 AnsiConsole.Write(new Rule("[blue]Finished![/]"));
 Console.WriteLine("");
@@ -922,7 +1009,7 @@ public class Options
     [Option('o', "output", Default = "", Required = false, HelpText = "Set path to output chapter file")]
     public string ChapterFile { get; set; } = "";
 
-    [Option('l', "length", Default = 5, Required = false, HelpText = "Set chapter length in minutes (1-15)")]
+    [Option('l', "length", Default = 5, Required = false, HelpText = "Set chapter length (time from chapter to next chapter) in minutes (1-30)")]
     public int ChapterLength { get; set; }
 
     [Option('c', "close", Default = false, Required = false, HelpText = "Close application automatically after chapter creation and on errors")]
@@ -936,6 +1023,9 @@ public class Options
 
     [Option('s', "style", Default = "all", Required = false, HelpText = "Set chapter style (chapters, meta, all)\n[chapters = simple chapter format Matroska compatible, meta = METAINFO ffmpeg compatible]")]
     public string ChapterStyle { get; set; } = "";
+
+    [Option('r', "raw", Default = false, Required = false, HelpText = "Use all raw scene changes (ignores option 'length')\nThis will additionally to the chapter files create a raw file with scene timestamps\nWARNING: this might lead to a huge count of chapters and is therefore not recommended for regular use!")]
+    public bool RawChapters { get; set; }
 }
 #endregion
 

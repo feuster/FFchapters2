@@ -8,6 +8,8 @@ and/or a metafile for use directly with ffmpeg (add ```-i "<PATH>\<FILENAME>.met
 
 As alternative you can use the [AddChaptersToMovieFile.cmd](./AddChaptersToMovieFile.cmd) Windows script by drag & drop your movie file on it to create a copy with generated markers.
 
+There is also the optional raw mode creates an additional timestamp raw file for independent use.
+
 ## FFmpeg Installation
 The required FFmpeg is not be bundled with the FFchapters2 Linux release.
 In that case or if you intend to use another ffmpeg binary for the Windows version you can download a FFmpeg binary

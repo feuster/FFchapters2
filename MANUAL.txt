@@ -6,7 +6,7 @@
 
   -o, --output        (Default: ) Set path to output chapter file
 
-  -l, --length        (Default: 5) Set chapter length in minutes (1-15)
+  -l, --length        (Default: 5) Set chapter length (time from chapter to next chapter) in minutes (1-30)
 
   -c, --close         (Default: false) Close application automatically after chapter creation and on errors
 
@@ -16,6 +16,11 @@
 
   -s, --style         (Default: all) Set chapter style (chapters, meta, all)
                       [chapters = simple chapter format Matroska compatible, meta = METAINFO ffmpeg compatible]
+
+  -r, --raw           (Default: false) Use all raw scene changes (ignores option 'length')
+                      This will additionally to the chapter files create a raw file with scene timestamps
+                      WARNING: this might lead to a huge count of chapters and is therefore not recommended for regular
+                      use!
 
   --help              Display this help screen.
 
@@ -32,8 +37,13 @@
 Example:
 FFchapters2.exe -f C:\Bin\ffmpeg.exe -i C:\Videos\MyMovie.mp4 -l 10 -s meta -o C:\Videos\Chapters.meta
 
+──────────────────────────────────────────────────────── Hints ─────────────────────────────────────────────────────────
+
+For a better representation it is recommended to use a "Nerd" font in your terminal:
+https://www.nerdfonts.com/
+
 ────────────────────────────────────────────────────── Copyright ───────────────────────────────────────────────────────
 
-Based on FFchapters2 2.0.0.3
+Based on FFchapters2 V2.6
 https://github.com/feuster/FFchapters2
-© Alexander Feuster 2023
+© Alexander Feuster 2023-2024

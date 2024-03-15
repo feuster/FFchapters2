@@ -2,17 +2,17 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ErrorReport>none</ErrorReport>
-    <AssemblyVersion>2.0.0.5</AssemblyVersion>
-    <FileVersion>2.0.0.5</FileVersion>
+    <AssemblyVersion>2.0.0.6</AssemblyVersion>
+    <FileVersion>2.0.0.6</FileVersion>
     <SignAssembly>False</SignAssembly>
     <Title>FFchapters2</Title>
     <Company>Feuster</Company>
     <Description>FFchapters2 is a FFmpeg based video chapter generation tool</Description>
-    <Copyright>© Alexander Feuster 2023</Copyright>
+    <Copyright>© Alexander Feuster 2023-2024</Copyright>
     <PackageTags>FFchapter2, ffmpeg, chapter, chapters, metainfo, MKV, Matroska</PackageTags>
     <NeutralLanguage>en-001</NeutralLanguage>
     <PackageLicenseExpression>GPL-2.0-only</PackageLicenseExpression>
@@ -27,14 +27,7 @@
     <DefineConstants Condition="'$(RuntimeIdentifier)' == 'linux-x86'">$(DefineConstants);LINUX</DefineConstants>
     <DefineConstants Condition="'$(RuntimeIdentifier)' == 'linux-x64'">$(DefineConstants);LINUX</DefineConstants>
     <Version>$(AssemblyVersion)</Version>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
-    <LangVersion>10</LangVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
-    <LangVersion>11</LangVersion>
+    <PublishAot>True</PublishAot>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -48,14 +41,6 @@
     <DebugType>None</DebugType>
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
     <NoWarn>1701;1702;CS8600;CS8602</NoWarn>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0|AnyCPU'">
-    <DebugType>portable</DebugType>
   </PropertyGroup>
 
   <ItemGroup>

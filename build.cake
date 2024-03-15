@@ -112,19 +112,39 @@ Task("Publish")
     .Does(() =>
     {
         Console.WriteLine();
-        DotNetPublish("./FFchapters2/FFchapters2.csproj", new DotNetPublishSettings
+        if (runtime.Contains("linux"))
         {
-            Configuration = configuration,
-            EnableCompressionInSingleFile = true,
-            Framework = framework,
-            OutputDirectory = $"./{artifacts}/",
-            PublishSingleFile = true,
-            PublishReadyToRun = true,
-            PublishTrimmed = false,
-            PublishReadyToRunShowWarnings = true,
-            Runtime = runtime,
-            SelfContained = true           
-        });
+			DotNetPublish("./FFchapters2/FFchapters2.csproj", new DotNetPublishSettings
+			{
+				Configuration = configuration,
+				EnableCompressionInSingleFile = true,
+				Framework = framework,
+				OutputDirectory = $"./{artifacts}/",
+				PublishSingleFile = true,
+				PublishReadyToRun = false,
+				PublishTrimmed = true,
+				PublishReadyToRunShowWarnings = true,
+				Runtime = runtime,
+				SelfContained = true
+			});		
+		}		
+		else
+		{
+			DotNetPublish("./FFchapters2/FFchapters2.csproj", new DotNetPublishSettings
+			{
+				Configuration = configuration,
+				EnableCompressionInSingleFile = true,
+				Framework = framework,
+				OutputDirectory = $"./{artifacts}/",
+				PublishSingleFile = false,
+				PublishReadyToRun = false,
+				PublishTrimmed = true,
+				PublishReadyToRunShowWarnings = true,
+				Runtime = runtime,
+				SelfContained = true,
+				ArgumentCustomization = args=>args.Append("/p:TrimMode=partial").Append("/p:PublishAoT=true")			
+			});
+		}
     });
 
 
