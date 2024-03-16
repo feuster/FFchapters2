@@ -37,13 +37,14 @@ bool IgnoreExistingChapters = false;
 bool ChapterStyle1 = false;
 bool ChapterStyle2 = false;
 bool RawChapters = false;
+bool ChapterDistributionAssumption = false;
 bool OSLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 //GitVersion will be only be actualized/overwritten when using Cake build!
-const string GitVersion = "git-e3510d1";
+const string GitVersion = "git-ae683da";
 const string Homepage = "https://github.com/feuster/FFchapters2";
 
 [DllImport("kernel32.dll", EntryPoint = "AllocConsole", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
-static extern int AllocConsole();
+static extern void AllocConsole();
 #endregion
 
 #region Global exception handler
@@ -326,7 +327,7 @@ Parser.Default.ParseArguments<Options>(args)
                            AnsiConsole.MarkupLine($"[yellow]Raw chapters: using all raw scenes for chapters (ignores 'length' and is not recommended!) [/]");
                        }
 
-                       if (o.ChapterLength > 0 && o.ChapterLength < 31 && !RawChapters)
+                       if (o.ChapterLength > 0 && o.ChapterLength < 61 && !RawChapters)
                        {
                            Length = (int)o.ChapterLength;
                            AnsiConsole.MarkupLine($"[green]Chapter length: {Length} (Minutes)[/]");
@@ -381,12 +382,12 @@ if (Length == 0 && !RawChapters)
         MoreChoicesText = "[grey](Move up and down to reveal more options)[/]"
     };
     prompt.AddChoice("1 minute");
-    for (int i = 2; i < 16; i++)
+    for (int i = 2; i < 31; i++)
     {
         prompt.AddChoice($"{i} minutes");
     }
     string selection = AnsiConsole.Prompt(prompt);
-    AnsiConsole.Markup($"[green]{selection}[/]");
+    AnsiConsole.Markup($"[green]Selected chapter length {selection}[/]");
     AnsiConsole.WriteLine("");
     int.TryParse(selection.Replace(" minutes", "").Replace(" minute", ""), out Length);
 }
@@ -395,13 +396,7 @@ AnsiConsole.WriteLine("");
 #endregion
 
 #region FFmpeg execution
-AnsiConsole.Write(new Rule("[blue]FFmpeg extract scene changes[/]"));
-AnsiConsole.WriteLine("");
 AnsiConsole
-    //.Status()
-    //.Spinner(Spinner.Known.Material)
-    //.SpinnerStyle(Style.Parse("green bold"))
-    //.AutoRefresh(false)
     .Progress()
     .AutoRefresh(true)
     .HideCompleted(true)
@@ -456,6 +451,9 @@ AnsiConsole
                         {
                             Duration = Convert.ToInt32(buffer.Substring(0, 2)) * 3600 + Convert.ToInt32(buffer.Substring(3, 2)) * 60 + Convert.ToInt32(buffer.Substring(6, 2));
                             task.MaxValue = Duration;
+
+                            //Show the chapter distribution assumption info once with the now available duration value
+                            ChapterDistributionAssumption = WriteChapterDistributionAssumption(Duration);
                         }
                     }
                     else
@@ -478,7 +476,6 @@ AnsiConsole
 
             //Start FFmpeg chapter extraction
             var Start = DateTime.Now;
-            AnsiConsole.MarkupLine("[Green]Start: " + Start.ToLongTimeString() + "[/]");
             RunProcess.Start();
             RunProcess.BeginOutputReadLine();
             RunProcess.BeginErrorReadLine();
@@ -486,6 +483,15 @@ AnsiConsole
             //Show progressbar with time estimation
             while (!RunProcess.HasExited)
             {
+                //Show this info only once after the chapter distribution assumption info
+                if (ChapterDistributionAssumption)
+                {
+                    AnsiConsole.Write(new Rule("[blue]FFmpeg extract scene changes[/]"));
+                    AnsiConsole.WriteLine("");
+                    AnsiConsole.MarkupLine("[Green]Start: " + Start.ToLongTimeString() + "[/]");
+                    ChapterDistributionAssumption = false;
+                }
+
                 if (task.Value < Progress && Duration != 0)
                     task.Value = Progress;
             }
@@ -984,6 +990,29 @@ string GetFFmpegVersion()
         AnsiConsole.MarkupLine("[White on Red]Exception: " + e.Message + "[/]");
         return string.Empty;
     }
+}
+#endregion
+
+#region Chapter distribution assumption
+bool WriteChapterDistributionAssumption(int MaxDuration)
+{
+    if (!RawChapters && Length > 59)
+    {
+        int ChapterX = Math.Abs(MaxDuration / Length);
+        int LastChapter = ChapterX * Length;
+        AnsiConsole.Write(new Rule("[blue]Chapter distribution assumption[/]"));
+        AnsiConsole.WriteLine("");
+        AnsiConsole.Write(new Columns(
+                new Text("0 minutes (Start)", new Style(Color.Green)),
+                new Text($"{Length / 60} minutes (Chapter 1)", new Style(Color.Green)),
+                new Text($"{Length / 30} minutes (Chapter 2)", new Style(Color.Green)),
+                new Text($"{Length / 20} minutes (Chapter 3)", new Style(Color.Green)),
+                new Text($"...", new Style(Color.Green)),
+                new Text($"{LastChapter / 60} minutes (Chapter {ChapterX})", new Style(Color.Green))
+            ));
+        AnsiConsole.WriteLine("");
+    }
+    return true;
 }
 #endregion
 
