@@ -40,7 +40,7 @@ bool RawChapters = false;
 bool ChapterDistributionAssumption = false;
 bool OSLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 //GitVersion will be only be actualized/overwritten when using Cake build!
-const string GitVersion = "git-ae683da";
+const string GitVersion = "git-918d1e7";
 const string Homepage = "https://github.com/feuster/FFchapters2";
 
 [DllImport("kernel32.dll", EntryPoint = "AllocConsole", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
@@ -382,7 +382,7 @@ if (Length == 0 && !RawChapters)
         MoreChoicesText = "[grey](Move up and down to reveal more options)[/]"
     };
     prompt.AddChoice("1 minute");
-    for (int i = 2; i < 31; i++)
+    for (int i = 2; i < 61; i++)
     {
         prompt.AddChoice($"{i} minutes");
     }
@@ -996,7 +996,8 @@ string GetFFmpegVersion()
 #region Chapter distribution assumption
 bool WriteChapterDistributionAssumption(int MaxDuration)
 {
-    if (!RawChapters && Length > 59)
+    //Only show this info when the duration allows to create at least 4 chapters, the length is sufficient and raw mode is disabled
+    if (!RawChapters && Length > 59 && MaxDuration > (4 * Length) )
     {
         int ChapterX = Math.Abs(MaxDuration / Length);
         int LastChapter = ChapterX * Length;
