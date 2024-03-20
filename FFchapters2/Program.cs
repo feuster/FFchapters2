@@ -40,11 +40,13 @@ bool RawChapters = false;
 bool ChapterDistributionAssumption = false;
 bool OSLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 //GitVersion will be only be actualized/overwritten when using Cake build!
-const string GitVersion = "git-918d1e7";
+const string GitVersion = "git-241df77";
 const string Homepage = "https://github.com/feuster/FFchapters2";
 
+#if WINDOWS
 [DllImport("kernel32.dll", EntryPoint = "AllocConsole", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
 static extern void AllocConsole();
+#endif
 #endregion
 
 #region Global exception handler
@@ -64,7 +66,9 @@ AppDomain.CurrentDomain.UnhandledException += unhandledExceptionEventHandler;
 
 #region Title
 //Title
+#if WINDOWS
 AllocConsole();
+#endif
 Console.OutputEncoding = Encoding.UTF8;
 Console.InputEncoding = Encoding.UTF8;
 FigletText fText = new FigletText(FigletFont.Default, AppName ?? "FFChapters2").Centered().Color(Color.Blue);

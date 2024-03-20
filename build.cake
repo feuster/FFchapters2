@@ -122,10 +122,11 @@ Task("Publish")
 				OutputDirectory = $"./{artifacts}/",
 				PublishSingleFile = true,
 				PublishReadyToRun = false,
-				PublishTrimmed = true,
+				PublishTrimmed = false,
 				PublishReadyToRunShowWarnings = true,
 				Runtime = runtime,
-				SelfContained = true
+				SelfContained = true,
+				ArgumentCustomization = args=>args.Append("/p:PublishAoT=false")
 			});		
 		}		
 		else
