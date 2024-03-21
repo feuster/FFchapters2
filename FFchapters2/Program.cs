@@ -40,7 +40,7 @@ bool RawChapters = false;
 bool ChapterDistributionAssumption = false;
 bool OSLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 //GitVersion will be only be actualized/overwritten when using Cake build!
-const string GitVersion = "git-d543975";
+const string GitVersion = "git-61e5b51";
 const string Homepage = "https://github.com/feuster/FFchapters2";
 
 #if WINDOWS
@@ -1043,7 +1043,7 @@ public class Options
     [Option('o', "output", Default = "", Required = false, HelpText = "Set path to output chapter file")]
     public string ChapterFile { get; set; } = "";
 
-    [Option('l', "length", Default = 5, Required = false, HelpText = "Set chapter length (time from chapter to next chapter) in minutes (1-30)")]
+    [Option('l', "length", Default = 5, Required = false, HelpText = "Set chapter length (time from chapter to next chapter) in minutes (1-60)")]
     public int ChapterLength { get; set; }
 
     [Option('c', "close", Default = false, Required = false, HelpText = "Close application automatically after chapter creation and on errors")]
