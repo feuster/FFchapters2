@@ -40,7 +40,7 @@ bool RawChapters = false;
 bool ChapterDistributionAssumption = false;
 bool OSLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 //GitVersion will be only be actualized/overwritten when using Cake build!
-const string GitVersion = "git-241df77";
+const string GitVersion = "git-d543975";
 const string Homepage = "https://github.com/feuster/FFchapters2";
 
 #if WINDOWS

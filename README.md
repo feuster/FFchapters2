@@ -21,6 +21,9 @@ The FFmpeg binary can be utilized by FFchapter2 via the following options:
 - the path to the FFmpeg binary can be in FFchapters2 configured with the commandline switch -f or --ffmpeg, for e.g. ```-f "<PATH>\ffmpeg.exe"```
 - as default ffmpeg binary is "ffmpeg.exe" searched in Windows and "ffmpeg" (without extension) in Linux, you can override this also with ```-f "<PATH>\<FFMPEGFILENAME><.OPTIONALEXTENSION>"```
 
+## Hint
+For a better representation it is recommended to use a "Nerd" font in your terminal. See the [Nerdfonts Homepage](https://www.nerdfonts.com/) for details.
+
 ## License / Copyright
 FFchapters2 is licensed under [GPL-2.0-only](./LICENSE).
 
