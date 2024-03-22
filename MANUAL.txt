@@ -6,13 +6,14 @@
 
   -o, --output        (Default: ) Set path to output chapter file
 
-  -l, --length        (Default: 5) Set chapter length (time from chapter to next chapter) in minutes (1-30)
+  -l, --length        (Default: 5) Set chapter length (time from chapter to next chapter) in minutes (1-60)
+                      A value of 0 will open the manual Chapter length menu
 
   -c, --close         (Default: false) Close application automatically after chapter creation and on errors
 
   -n, --nochapters    (Default: false) Ignore existing chapters in video file
 
-  -t, --title         (Default: ) Set chapter title (is used for all chapters)
+  -t, --title         (Default: auto) Set chapter title (is used for all chapters)
 
   -s, --style         (Default: all) Set chapter style (chapters, meta, all)
                       [chapters = simple chapter format Matroska compatible, meta = METAINFO ffmpeg compatible]
@@ -21,6 +22,8 @@
                       This will additionally to the chapter files create a raw file with scene timestamps
                       WARNING: this might lead to a huge count of chapters and is therefore not recommended for regular
                       use!
+
+  -v, --validate      (Default: false) Validate assumpted chapters with created chapters
 
   --help              Display this help screen.
 
@@ -44,6 +47,6 @@ https://www.nerdfonts.com/
 
 ────────────────────────────────────────────────────── Copyright ───────────────────────────────────────────────────────
 
-Based on FFchapters2 V2.6
+Based on FFchapters2 V2.7
 https://github.com/feuster/FFchapters2
 © Alexander Feuster 2023-2024
