@@ -38,9 +38,10 @@ bool ChapterStyle1 = false;
 bool ChapterStyle2 = false;
 bool RawChapters = false;
 bool ChapterDistributionAssumption = false;
+bool Validate = false;
 bool OSLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 //GitVersion will be only be actualized/overwritten when using Cake build!
-const string GitVersion = "git-61e5b51";
+const string GitVersion = "git-2a29976";
 const string Homepage = "https://github.com/feuster/FFchapters2";
 
 #if WINDOWS
@@ -362,6 +363,12 @@ Parser.Default.ParseArguments<Options>(args)
                            else
                                ChapterTitle = "Chapter";
                            AnsiConsole.MarkupLine($"[green]Chaptertitle: \"{ChapterTitle}\" (System Standard \"{buffer}\")[/]");
+                       }
+
+                       if (o.Validate)
+                       {
+                           Validate = o.Validate;
+                           AnsiConsole.MarkupLine($"[green]Validate: compare assumpted and created chapters when finished[/]");
                        }
                    })
                    .WithNotParsed<Options>(o =>
@@ -911,6 +918,8 @@ if (RawChapters)
 #endregion
 
 #region End
+if (Validate)
+    Validation();
 AnsiConsole.Write(new Rule("[blue]Finished![/]"));
 Console.WriteLine("");
 AnyKey();
@@ -1021,6 +1030,48 @@ bool WriteChapterDistributionAssumption(int MaxDuration)
 }
 #endregion
 
+#region Validation
+void Validation()
+{
+    //Show a table which compares the assumpted chapters with the real created chapters
+    AnsiConsole.Write(new Rule("[blue]Validation[/]"));
+    Console.WriteLine("");
+    
+    //Check created chapters contain more then only the default start chapter at 0:00:00.000
+    if (ChaptersRaw.Count < 2)
+    {
+        AnsiConsole.MarkupLine($"[White on Red]No chapters created![/]");
+        Console.WriteLine("");
+        return;
+    }
+
+    //Create validation table
+    var table = new Table();
+    table.Centered();
+    table.Border(TableBorder.Rounded);
+    table.AddColumn(new TableColumn("Chapter").Centered());
+    table.AddColumn(new TableColumn("Chapter assumpted").Centered());
+    table.AddColumn(new TableColumn("Chapter created").Centered());
+    for (int i = 1; i < ChaptersRaw.Count + 1; i++)
+    {
+        if (i < ChaptersRaw.Count)
+        {
+            TimeSpan ChapterAssumpted = TimeSpan.FromMinutes(i * Length / 60);
+            TimeSpan ChapterCreated = TimeSpan.Parse(ChaptersRaw[i]);
+            //add row and mark created chapter in yellow if the difference to the assumpted chapter is greater than 1 minute
+            if (ChapterAssumpted.Minutes == ChapterCreated.Minutes)
+                table.AddRow($"[White]Chapter {i}[/]", $"[Blue]{ChapterAssumpted.ToString(@"hh\:mm\:ss\:fff")}[/]", $"[green]{ChaptersRaw[i]}[/]");
+            else
+                table.AddRow($"[White]Chapter {i}[/]", $"[Blue]{ChapterAssumpted.ToString(@"hh\:mm\:ss\:fff")}[/]", $"[yellow]{ChaptersRaw[i]}[/]");
+        }
+        else
+            break;
+    }
+    AnsiConsole.Write(table);
+    Console.WriteLine("");
+}
+#endregion
+
 #region Options
 public class Options
 {
@@ -1043,7 +1094,7 @@ public class Options
     [Option('o', "output", Default = "", Required = false, HelpText = "Set path to output chapter file")]
     public string ChapterFile { get; set; } = "";
 
-    [Option('l', "length", Default = 5, Required = false, HelpText = "Set chapter length (time from chapter to next chapter) in minutes (1-60)")]
+    [Option('l', "length", Default = 5, Required = false, HelpText = "Set chapter length (time from chapter to next chapter) in minutes (1-60)\nA value of 0 will open the manual Chapter length menu")]
     public int ChapterLength { get; set; }
 
     [Option('c', "close", Default = false, Required = false, HelpText = "Close application automatically after chapter creation and on errors")]
@@ -1060,6 +1111,9 @@ public class Options
 
     [Option('r', "raw", Default = false, Required = false, HelpText = "Use all raw scene changes (ignores option 'length')\nThis will additionally to the chapter files create a raw file with scene timestamps\nWARNING: this might lead to a huge count of chapters and is therefore not recommended for regular use!")]
     public bool RawChapters { get; set; }
+
+    [Option('v', "validate", Default = false, Required = false, HelpText = "Validate assumpted chapters with created chapters")]
+    public bool Validate { get; set; }
 }
 #endregion
 
