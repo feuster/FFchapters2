@@ -10,6 +10,8 @@ As alternative you can use the [AddChaptersToMovieFile.cmd](./AddChaptersToMovie
 
 There is also the optional raw mode creates an additional timestamp raw file for independent use.
 
+An optional validation can inform you if the created chapters differ from the chapter assumption.
+
 ## FFmpeg Installation
 The required FFmpeg is not be bundled with the FFchapters2 Linux release.
 In that case or if you intend to use another ffmpeg binary for the Windows version you can download a FFmpeg binary
@@ -29,5 +31,12 @@ FFchapters2 is licensed under [GPL-2.0-only](./LICENSE).
 
 © Alexander Feuster 2023-2024
 
-## Running Demo
+## Demo screenshots
+<p align="center">Chapter creation</p>
+
 ![Running Demo](./Running.gif)
+\
+<p align="center">Chapter validation</p>
+
+![Validation Demo](./Validation.png)
+

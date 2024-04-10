@@ -6,8 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ErrorReport>none</ErrorReport>
-    <AssemblyVersion>2.0.0.6</AssemblyVersion>
-    <FileVersion>2.0.0.6</FileVersion>
+    <AssemblyVersion>2.0.0.7</AssemblyVersion>
+    <FileVersion>2.0.0.7</FileVersion>
     <SignAssembly>False</SignAssembly>
     <Title>FFchapters2</Title>
     <Company>Feuster</Company>
