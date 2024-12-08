@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ErrorReport>none</ErrorReport>
-    <AssemblyVersion>2.0.0.7</AssemblyVersion>
-    <FileVersion>2.0.0.7</FileVersion>
+    <AssemblyVersion>2.0.0.8</AssemblyVersion>
+    <FileVersion>2.0.0.8</FileVersion>
     <SignAssembly>False</SignAssembly>
     <Title>FFchapters2</Title>
     <Company>Feuster</Company>

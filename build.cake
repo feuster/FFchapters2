@@ -8,7 +8,7 @@
 var artifacts = Argument("artifacts", "artifacts");
 var release = Argument("release", "Release");
 var configuration = Argument("configuration", "Release");
-var framework = Argument("framework", "net8.0");
+var framework = Argument("framework", "net9.0");
 var runtime = Argument("runtime", "win-x64");
 var target = Argument("target", "ZipRelease");
 IEnumerable<string> IGitVersion;

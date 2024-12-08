@@ -41,7 +41,7 @@ bool ChapterDistributionAssumption = false;
 bool Validate = false;
 bool OSLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 //GitVersion will be only be actualized/overwritten when using Cake build!
-const string GitVersion = "git-2a29976";
+const string GitVersion = "git-490c720";
 const string Homepage = "https://github.com/feuster/FFchapters2";
 
 #if WINDOWS
@@ -84,6 +84,8 @@ AppVersion += $" [green].NET6[/]";
 AppVersion += $" [green].NET7[/]";
 #elif NET8_0
 AppVersion += $" [green].NET8[/]";
+#elif NET9_0
+AppVersion += $" [green].NET9[/]";
 #endif
 if (!string.IsNullOrEmpty(GitVersion)) AppVersion += $" [green]{GitVersion}[/]";
 if (DateTime.Now.Year > 2023)
