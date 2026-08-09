@@ -78,6 +78,23 @@
             <param name="encoding">The encoding to use for the file.</param>
             <param name="lines">The text lines to write.</param>
         </member>
+        <member name="M:Cake.FileHelpers.FileHelperAliases.FileWriteLines(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Writes all text lines to a file
+            </summary>
+            <param name="context">The context.</param>
+            <param name="file">The file to write to.</param>
+            <param name="lines">The text lines to write.</param>
+        </member>
+        <member name="M:Cake.FileHelpers.FileHelperAliases.FileWriteLines(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.Text.Encoding,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Writes all text lines to a file
+            </summary>
+            <param name="context">The context.</param>
+            <param name="file">The file to write to.</param>
+            <param name="encoding">The encoding to use for the file.</param>
+            <param name="lines">The text lines to write.</param>
+        </member>
         <member name="M:Cake.FileHelpers.FileHelperAliases.FileAppendText(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.String)">
             <summary>
             Appends all text to a file
@@ -104,6 +121,23 @@
             <param name="lines">The text lines to append.</param>
         </member>
         <member name="M:Cake.FileHelpers.FileHelperAliases.FileAppendLines(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.Text.Encoding,System.String[])">
+            <summary>
+            Appends all text lines to a file
+            </summary>
+            <param name="context">The context.</param>
+            <param name="file">The file to append text to.</param>
+            <param name="encoding">The encoding to use for the file.</param>
+            <param name="lines">The text lines to append.</param>
+        </member>
+        <member name="M:Cake.FileHelpers.FileHelperAliases.FileAppendLines(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Appends all text lines to a file
+            </summary>
+            <param name="context">The context.</param>
+            <param name="file">The file to append text to.</param>
+            <param name="lines">The text lines to append.</param>
+        </member>
+        <member name="M:Cake.FileHelpers.FileHelperAliases.FileAppendLines(Cake.Core.ICakeContext,Cake.Core.IO.FilePath,System.Text.Encoding,System.Collections.Generic.IEnumerable{System.String})">
             <summary>
             Appends all text lines to a file
             </summary>

@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Cake.7zip</id>
-    <version>3.0.0</version>
+    <version>5.0.0</version>
     <authors>Nils Andresen</authors>
     <license type="expression">MIT</license>
     <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
@@ -12,12 +12,12 @@
     <iconUrl>https://cdn.jsdelivr.net/gh/cake-contrib/graphics/png/addin/cake-contrib-addin-medium.png</iconUrl>
     <description>Makes 7zip available as a tool in Cake</description>
     <releaseNotes>https://github.com/cake-contrib/Cake.7zip/releases</releaseNotes>
-    <copyright>Copyright © 2020-2022 — Nils Andresen</copyright>
+    <copyright>Copyright © 2020-2024 — Nils Andresen</copyright>
     <tags>cake build cake-build script addin cake-addin SevenZip 7zip</tags>
-    <repository type="git" url="https://github.com/cake-contrib/Cake.7zip.git" commit="c4e2cfcdc1487bec5d0e1a35da0dba6dd28ded35" />
+    <repository type="git" url="https://github.com/cake-contrib/Cake.7zip.git" branch="refs/heads/tags/5.0.0" commit="5fa3a79ad8725f0dfddf8f00d822a80fbf8183de" />
     <dependencies>
-      <group targetFramework="net6.0" />
-      <group targetFramework="net7.0" />
+      <group targetFramework="net8.0" />
+      <group targetFramework="net9.0" />
     </dependencies>
   </metadata>
 </package>

@@ -49,4 +49,4 @@ https://www.nerdfonts.com/
 
 Based on FFchapters2 V2.7
 https://github.com/feuster/FFchapters2
-© Alexander Feuster 2023-2024
+© Alexander Feuster 2023-2026

@@ -6,6 +6,12 @@ echo ========================================
 echo.
 dotnet --info
 echo.
+echo ========================================
+echo Dotnet Workload
+echo ========================================
+echo.
+dotnet workload restore
+echo.
 if exist ".config/dotnet-tools.json" (
 	echo ========================================
 	echo Cake Restore

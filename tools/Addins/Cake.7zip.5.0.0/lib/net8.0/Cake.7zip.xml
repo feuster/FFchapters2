@@ -939,6 +939,24 @@
             <param name="level">The level to set.</param>
             <returns>The builder-instance for fluent re-use.</returns>
         </member>
+        <member name="M:Cake.SevenZip.Builder.SwitchCompressionMethodBuilder.WithCompressionMethodDictionarySize``1(``0,System.Int32)">
+            <summary>
+            fluent setter for the method of <see cref="T:Cake.SevenZip.Switches.ISupportSwitchCompressionMethod"/>.
+            </summary>
+            <typeparam name="T">the builder to support the <see cref="T:Cake.SevenZip.Switches.ISupportSwitchCompressionMethod"/>.</typeparam>
+            <param name="this">The this.</param>
+            <param name="dictionarySize">Size of the dictionary.</param>
+            <returns>The builder-instance for fluent re-use.</returns>
+        </member>
+        <member name="M:Cake.SevenZip.Builder.SwitchCompressionMethodBuilder.WithCompressionMethodSortFilesByType``1(``0,System.Boolean)">
+            <summary>
+            fluent setter for the method of <see cref="T:Cake.SevenZip.Switches.ISupportSwitchCompressionMethod"/>.
+            </summary>
+            <typeparam name="T">the builder to support the <see cref="T:Cake.SevenZip.Switches.ISupportSwitchCompressionMethod"/>.</typeparam>
+            <param name="this">The this.</param>
+            <param name="sortFilesByType">enable / disable the sorting files by type in solid archives.</param>
+            <returns>The builder-instance for fluent re-use.</returns>
+        </member>
         <member name="T:Cake.SevenZip.Builder.SwitchDeleteAfterCompressionBuilder">
             <summary>
             Extensions for all Builders that support <see cref="T:Cake.SevenZip.Switches.ISupportSwitchDeleteAfterCompression"/>.
@@ -3410,6 +3428,26 @@
             <value>
             The method.
             </value>
+        </member>
+        <member name="P:Cake.SevenZip.Switches.SwitchCompressionMethod.DictionarySize">
+             <summary>
+             Gets or sets the size of the dictionary.
+            
+             Dictionary size in bytes will be calculated as 2 ^ DictionarySize (24 -> 2 ^ 24 -> 16MB).
+             </summary>
+             <value>
+             The size of the dictionary.
+             </value>
+        </member>
+        <member name="P:Cake.SevenZip.Switches.SwitchCompressionMethod.SortFilesByType">
+             <summary>
+             Gets or sets the sorting files by type in solid archives.
+            
+             The default mode is qs=off.
+             </summary>
+             <value>
+             The size of the dictionary.
+             </value>
         </member>
         <member name="M:Cake.SevenZip.Switches.SwitchCompressionMethod.BuildArguments(Cake.Core.IO.ProcessArgumentBuilder@)">
             <inheritdoc/>

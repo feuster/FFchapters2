@@ -29,7 +29,7 @@ For a better representation it is recommended to use a "Nerd" font in your termi
 ## License / Copyright
 FFchapters2 is licensed under [GPL-2.0-only](./LICENSE).
 
-© Alexander Feuster 2023-2024
+© Alexander Feuster 2023-2026
 
 ## Demo screenshots
 <p align="center">Chapter creation</p>

@@ -86,10 +86,13 @@ Thanks goes to these wonderful people ([emoji key][emoji-key]):
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <table>
-  <tr>
-    <td align="center"><a href="http://www.nils-andresen.de/"><img src="https://avatars3.githubusercontent.com/u/349188?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nils Andresen</b></sub></a><br /><a href="https://github.com/cake-contrib/Cake.7zip/commits?author=nils-a" title="Code">💻</a> <a href="https://github.com/cake-contrib/Cake.7zip/commits?author=nils-a" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/DiDoHH"><img src="https://avatars.githubusercontent.com/u/45682415?v=4?s=100" width="100px;" alt=""/><br /><sub><b>DiDoHH</b></sub></a><br /><a href="https://github.com/cake-contrib/Cake.7zip/commits?author=DiDoHH" title="Documentation">📖</a></td>
-  </tr>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="http://www.nils-andresen.de/"><img src="https://avatars3.githubusercontent.com/u/349188?v=4?s=100" width="100px;" alt="Nils Andresen"/><br /><sub><b>Nils Andresen</b></sub></a><br /><a href="https://github.com/cake-contrib/Cake.7zip/commits?author=nils-a" title="Code">💻</a> <a href="https://github.com/cake-contrib/Cake.7zip/commits?author=nils-a" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/DiDoHH"><img src="https://avatars.githubusercontent.com/u/45682415?v=4?s=100" width="100px;" alt="DiDoHH"/><br /><sub><b>DiDoHH</b></sub></a><br /><a href="https://github.com/cake-contrib/Cake.7zip/commits?author=DiDoHH" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/stehlih"><img src="https://avatars.githubusercontent.com/u/43820014?v=4?s=100" width="100px;" alt="Heiko Stehli"/><br /><sub><b>Heiko Stehli</b></sub></a><br /><a href="https://github.com/cake-contrib/Cake.7zip/commits?author=stehlih" title="Code">💻</a></td>
+    </tr>
+  </tbody>
 </table>
 
 <!-- markdownlint-restore -->
