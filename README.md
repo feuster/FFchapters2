@@ -1,5 +1,5 @@
 # FFchapters2
-![FFchapters2](./FFchapters2/Resources/FFLogo_big.jpg)
+![FFchapters2](./FFchapters2/Resources/Logo_big.jpg)
 
 ## Introduction
 FFchapters2 is a FFmpeg based video chapter generation tool.
