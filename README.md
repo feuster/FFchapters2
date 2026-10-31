@@ -1,4 +1,5 @@
 # FFchapters2
+![FFchapters2](./FFchapters2/Resources/FFLogo_big.jpg)
 
 ## Introduction
 FFchapters2 is a FFmpeg based video chapter generation tool.
@@ -9,6 +10,8 @@ and/or a metafile for use directly with ffmpeg (add ```-i "<PATH>\<FILENAME>.met
 As alternative you can use the [AddChaptersToMovieFile.cmd](./AddChaptersToMovieFile.cmd) Windows script by drag & drop your movie file on it to create a copy with generated markers.
 
 There is also the optional raw mode creates an additional timestamp raw file for independent use.
+
+Optionally screenshots of the chapter positions can be created and/or previewed (preview is only available for Sixel graphics compatible terminals like Windows Terminal version 1.22 or newer).
 
 An optional validation can inform you if the created chapters differ from the chapter assumption.
 
@@ -40,3 +43,6 @@ FFchapters2 is licensed under [GPL-2.0-only](./LICENSE).
 
 ![Validation Demo](./Validation.png)
 
+<p align="center">Chapter screenshots</p>
+
+![Chapter Screenshots](./ChapterScreenshots.png)
