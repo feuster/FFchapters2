@@ -1,33 +1,37 @@
 ──────────────────────────────────────────────── Commandline arguments ─────────────────────────────────────────────────
 
-  -f, --ffmpeg        (Default: ffmpeg.exe) Set path to FFmpeg.exe
+  -f, --ffmpeg         (Default: ffmpeg.exe) Set path to FFmpeg.exe
 
-  -i, --input         (Default: ) Set path to input video
+  -i, --input          (Default: ) Set path to input video
 
-  -o, --output        (Default: ) Set path to output chapter file
+  -o, --output         (Default: ) Set path to output chapter file
 
-  -l, --length        (Default: 5) Set chapter length (time from chapter to next chapter) in minutes (1-60)
-                      A value of 0 will open the manual Chapter length menu
+  -l, --length         (Default: 5) Set chapter length (time from chapter to next chapter) in minutes (1-60)
+                       A value of 0 will open the manual Chapter length menu
 
-  -c, --close         (Default: false) Close application automatically after chapter creation and on errors
+  -c, --close          (Default: false) Close application automatically after chapter creation and on errors
 
-  -n, --nochapters    (Default: false) Ignore existing chapters in video file
+  -n, --nochapters     (Default: false) Ignore existing chapters in video file
 
-  -t, --title         (Default: auto) Set chapter title (is used for all chapters)
+  -t, --title          (Default: auto) Set chapter title (is used for all chapters)
 
-  -s, --style         (Default: all) Set chapter style (chapters, meta, all)
-                      [chapters = simple chapter format Matroska compatible, meta = METAINFO ffmpeg compatible]
+  -s, --style          (Default: all) Set chapter style (chapters, meta, all)
+                       [chapters = simple chapter format Matroska compatible, meta = METAINFO ffmpeg compatible]
 
-  -r, --raw           (Default: false) Use all raw scene changes (ignores option 'length')
-                      This will additionally to the chapter files create a raw file with scene timestamps
-                      WARNING: this might lead to a huge count of chapters and is therefore not recommended for regular
-                      use!
+  -r, --raw            (Default: false) Use all raw scene changes (ignores option 'length')
+                       This will additionally to the chapter files create a raw file with scene timestamps
+                       WARNING: this might lead to a huge count of chapters and is therefore not recommended for regular
+                       use!
 
-  -v, --validate      (Default: false) Validate assumpted chapters with created chapters
+  -v, --validate       (Default: false) Validate assumpted chapters with created chapters
 
-  --help              Display this help screen.
+  --screenshots        (Default: false) Create screenshots from created chapters
 
-  --version           Display version information.
+  --showscreenshots    (Default: false) Show created screenshots in terminal (terminal must support Sixel graphics)
+
+  --help               Display this help screen.
+
+  --version            Display version information.
 
 ───────────────────────────────────────────── Commandline syntax examples ──────────────────────────────────────────────
 
@@ -36,6 +40,7 @@
 <Path-to-FFchapters2> -f <Path-to-FFmpeg> -i <Path-to-Moviefile> -l <Chapter-Length>
 <Path-to-FFchapters2> -f <Path-to-FFmpeg> -i <Path-to-Moviefile> -o <Path-to-Chapterfile>
 <Path-to-FFchapters2> -f <Path-to-FFmpeg> -i <Path-to-Moviefile> -o <Path-to-Chapterfile> -s <Chapter-Style>
+<Path-to-FFchapters2> -f <Path-to-FFmpeg> -i <Path-to-Moviefile> -o <Path-to-Chapterfile> -s <Chapter-Style> --screenshots --showscreenshots
 
 Example:
 FFchapters2.exe -f C:\Bin\ffmpeg.exe -i C:\Videos\MyMovie.mp4 -l 10 -s meta -o C:\Videos\Chapters.meta
@@ -47,6 +52,6 @@ https://www.nerdfonts.com/
 
 ────────────────────────────────────────────────────── Copyright ───────────────────────────────────────────────────────
 
-Based on FFchapters2 V2.7
+Based on FFchapters2 V2.11
 https://github.com/feuster/FFchapters2
 © Alexander Feuster 2023-2026

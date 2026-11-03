@@ -6,8 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ErrorReport>none</ErrorReport>
-    <AssemblyVersion>2.0.0.10</AssemblyVersion>
-    <FileVersion>2.0.0.10</FileVersion>
+    <AssemblyVersion>2.0.0.11</AssemblyVersion>
+    <FileVersion>2.0.0.11</FileVersion>
     <SignAssembly>False</SignAssembly>
     <Title>FFchapters2</Title>
     <Company>Feuster</Company>
@@ -55,7 +55,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="SharpSixel" Version="1.3.0" />
+    <PackageReference Include="SharpSixel" Version="1.5.0" />
     <PackageReference Include="Spectre.Console" Version="0.57.2" />
   </ItemGroup>
 
