@@ -55,7 +55,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="SharpSixel" Version="1.5.0" />
+    <PackageReference Include="SharpSixel" Version="1.6.0" />
     <PackageReference Include="Spectre.Console" Version="0.57.2" />
   </ItemGroup>
 
